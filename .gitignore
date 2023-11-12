@@ -1,0 +1,8 @@
+riscv.bin
+riscv.asc
+riscv.json
+abc.history
+*.asc
+*.json
+*.bin
+
