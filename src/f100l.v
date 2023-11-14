@@ -44,10 +44,11 @@ reg mem_write_enable = 0;
 // Clock.
 reg [21:0] count = 0;
 reg [5:0]  state = 0;
-reg [19:0] clock_div;
+//reg [19:0] clock_div;
 reg [14:0] delay_loop;
 wire clk;
-assign clk = clock_div[7];
+//assign clk = clock_div[1];
+assign clk = raw_clk;
 
 // Registers.
 reg [15:0] pc = 0;
@@ -122,7 +123,7 @@ wire eeprom_ready;
 // This block is simply a clock divider for the raw_clk.
 always @(posedge raw_clk) begin
   count <= count + 1;
-  clock_div <= clock_div + 1;
+  //clock_div <= clock_div + 1;
 end
 
 // Debug: This block simply drives the 8x4 LEDs.
@@ -815,7 +816,7 @@ memory_bus memory_bus_0(
   .write_enable (mem_write_enable),
   .clk          (clk),
   .raw_clk      (raw_clk),
-  .double_clk   (clock_div[6]),
+   //.double_clk  (clock_div[1]),
   .speaker_p    (speaker_p),
   .speaker_m    (speaker_m),
   .ioport_0     (ioport_0),
