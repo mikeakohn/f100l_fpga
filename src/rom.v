@@ -30,10 +30,18 @@ always @(address) begin
     4: data <= 16'h0020;
     // ads 0x001
     5: data <= 16'h5001;
+    // sll 2, 0x0001
+    6: data <= 16'h0362;
+    7: data <= 16'h0001;
     // lda 0x001
-    6: data <= 16'h8001;
+    8: data <= 16'h8001;
+    // lda #0xfff0
+    9: data <= 16'h8000;
+    10: data <= 16'hfff0;
+    // sra 3, a
+    11: data <= 16'h0003;
     // halt
-    7: data <= 16'h0400;
+    12: data <= 16'h0400;
     default: data <= 0;
   endcase
 end

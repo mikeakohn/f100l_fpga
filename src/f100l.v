@@ -130,8 +130,10 @@ always @(posedge raw_clk) begin
   case (count[9:7])
     //3'b000: begin column_value <= 4'b0111; leds_value <= ~temp[7:0]; end
     //3'b010: begin column_value <= 4'b1011; leds_value <= ~ea[7:0]; end
+    //3'b000: begin column_value <= 4'b0111; leds_value <= ~accum[15:8]; end
     3'b000: begin column_value <= 4'b0111; leds_value <= ~accum[7:0]; end
-    3'b010: begin column_value <= 4'b1011; leds_value <= ~instruction[15:8]; end
+    //3'b010: begin column_value <= 4'b1011; leds_value <= ~instruction[15:8]; end
+    3'b010: begin column_value <= 4'b1011; leds_value <= ~accum[15:8]; end
     3'b100: begin column_value <= 4'b1101; leds_value <= ~pc[7:0]; end
     3'b110: begin column_value <= 4'b1110; leds_value <= ~state; end
     default: begin column_value <= 4'b1111; leds_value <= 8'hff; end
@@ -145,36 +147,38 @@ parameter STATE_FETCH_OP_1 =            3;
 parameter STATE_START_DECODE =          4;
 parameter STATE_BIT_OP_READ_W_0 =       5;
 parameter STATE_BIT_OP_READ_W_1 =       6;
-parameter STATE_BIT_OP_EXECUTE =        7;
-parameter STATE_BIT_OP_WRITE_BACK =     8;
-parameter STATE_BIT_32_OP_WRITE_BACK =  9;
-parameter STATE_WRITE_BACK_JUMP_W_0 =  10;
-parameter STATE_WRITE_BACK_JUMP_W_1 =  11;
-parameter STATE_FETCH_JUMP_W_0 =       12;
-parameter STATE_FETCH_JUMP_W_1 =       13;
-parameter STATE_ALU_WRITE_BACK_PTR_0 = 14;
-parameter STATE_ALU_WRITE_BACK_PTR_1 = 15;
-parameter STATE_ALU_FETCH_PTR_0 =      16;
-parameter STATE_ALU_FETCH_PTR_1 =      17;
-parameter STATE_ALU_FETCH_DATA_0 =     18;
-parameter STATE_ALU_FETCH_DATA_1 =     19;
-parameter STATE_ALU_EXECUTE =          20;
-parameter STATE_WRITE_BACK =           21;
-parameter STATE_WRITE_BACK_1 =         22;
-parameter STATE_CAL_GET_LSP_1 =        23;
-parameter STATE_CAL_PUSH_JMP_0 =       24;
-parameter STATE_CAL_PUSH_JMP_1 =       25;
-parameter STATE_CAL_PUSH_CR_0 =        26;
-parameter STATE_CAL_PUSH_CR_1 =        27;
-parameter STATE_CAL_WRITE_LSP_0 =      28;
-parameter STATE_CAL_WRITE_LSP_1 =      29;
-parameter STATE_POP_FETCH_LSP_1 =      30;
-parameter STATE_POP_CR_0 =             31;
-parameter STATE_POP_CR_1 =             32;
-parameter STATE_POP_PC_0 =             33;
-parameter STATE_POP_PC_1 =             34;
-parameter STATE_POP_WRITE_LSP_0 =      35;
-parameter STATE_POP_WRITE_LSP_1 =      36;
+parameter STATE_BIT_OP_READ_W_2 =       7;
+parameter STATE_BIT_OP_READ_W_3 =       8;
+parameter STATE_BIT_OP_EXECUTE =        9;
+parameter STATE_BIT_OP_WRITE_BACK =    10;
+parameter STATE_BIT_32_OP_WRITE_BACK = 11;
+parameter STATE_WRITE_BACK_JUMP_W_0 =  12;
+parameter STATE_WRITE_BACK_JUMP_W_1 =  13;
+parameter STATE_FETCH_JUMP_W_0 =       14;
+parameter STATE_FETCH_JUMP_W_1 =       15;
+parameter STATE_ALU_WRITE_BACK_PTR_0 = 16;
+parameter STATE_ALU_WRITE_BACK_PTR_1 = 17;
+parameter STATE_ALU_FETCH_PTR_0 =      18;
+parameter STATE_ALU_FETCH_PTR_1 =      19;
+parameter STATE_ALU_FETCH_DATA_0 =     20;
+parameter STATE_ALU_FETCH_DATA_1 =     21;
+parameter STATE_ALU_EXECUTE =          22;
+parameter STATE_WRITE_BACK =           23;
+parameter STATE_WRITE_BACK_1 =         24;
+parameter STATE_CAL_GET_LSP_1 =        25;
+parameter STATE_CAL_PUSH_JMP_0 =       26;
+parameter STATE_CAL_PUSH_JMP_1 =       27;
+parameter STATE_CAL_PUSH_CR_0 =        28;
+parameter STATE_CAL_PUSH_CR_1 =        29;
+parameter STATE_CAL_WRITE_LSP_0 =      30;
+parameter STATE_CAL_WRITE_LSP_1 =      31;
+parameter STATE_POP_FETCH_LSP_1 =      32;
+parameter STATE_POP_CR_0 =             33;
+parameter STATE_POP_CR_1 =             34;
+parameter STATE_POP_PC_0 =             35;
+parameter STATE_POP_PC_1 =             36;
+parameter STATE_POP_WRITE_LSP_0 =      37;
+parameter STATE_POP_WRITE_LSP_1 =      38;
 
 parameter STATE_HALTED =       40;
 parameter STATE_ERROR =        41;
@@ -311,11 +315,11 @@ always @(posedge clk) begin
               begin
                 if (instruction[11] == 0)
                   if (instruction[10:0] != 0) begin
-                    // N.
+                    // N (short address).
                     ea <= instruction[10:0];
                     state <= STATE_ALU_FETCH_DATA_0;
                   end else begin
-                    // ,D or #D 
+                    // #D aka ,D
                     ea <= pc;
                     pc <= pc + 1;
                     //state <= STATE_ALU_FETCH_DATA_EA_0;
@@ -323,7 +327,7 @@ always @(posedge clk) begin
                   end
                 else
                   if (instruction[8:0] != 0) begin
-                    // /P, /P+, /P- or [P], [P]+, [P]-
+                    //  [P], [P]+, [P]- aka /P, /P+, /P-
                     ea <= instruction[8:0];
                     if (instruction[9] == 0) begin
                       state <= STATE_ALU_FETCH_PTR_0;
@@ -331,7 +335,7 @@ always @(posedge clk) begin
                       state <= STATE_ALU_WRITE_BACK_PTR_0;
                     end
                   end else begin
-                    // W.
+                    // long W aka .W
                     ea <= pc;
                     pc <= pc + 1;
                     state <= STATE_ALU_FETCH_PTR_0;
@@ -351,6 +355,19 @@ always @(posedge clk) begin
       STATE_BIT_OP_READ_W_1:
         begin
           mem_bus_enable <= 0;
+          ea <= mem_read;
+          state <= STATE_BIT_OP_READ_W_2;
+        end
+      STATE_BIT_OP_READ_W_2:
+        begin
+          mem_bus_enable <= 1;
+          mem_write_enable <= 0;
+          mem_address <= ea;
+          state <= STATE_BIT_OP_READ_W_3;
+        end
+      STATE_BIT_OP_READ_W_3:
+        begin
+          mem_bus_enable <= 0;
           data <= mem_read;
           state <= STATE_BIT_OP_EXECUTE;
         end
@@ -367,7 +384,7 @@ always @(posedge clk) begin
                       // x0: arithmetic, 10: logical, 11: rotate
                       2'b10: temp <= data >> bits;
                       2'b11: temp <= { 0, data[0], data[15:1] };
-                      default: temp <= sign16(data) >> bits;
+                      default: temp <= sign16(data) >>> bits;
                     endcase
                     state <= STATE_BIT_OP_WRITE_BACK;
                   end
@@ -376,7 +393,7 @@ always @(posedge clk) begin
                     // Shift right: sra.d, srl.d.
                     case (j_mode[1])
                       0: temp32 <= { accum, temp } >> bits5;
-                      1: temp32 <= sign32({ accum, temp }) >> bits5;
+                      1: temp32 <= sign32({ accum, temp }) >>> bits5;
                     endcase
                     state <= STATE_BIT_32_OP_WRITE_BACK;
                   end
