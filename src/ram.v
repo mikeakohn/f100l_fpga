@@ -27,10 +27,10 @@ reg [15:0] storage [1023:0];
 
 /*
 initial begin
-  storage[4] <= 8'ha0;
-  storage[5] <= 8'h55;
-  storage[6] <= 8'h99;
-  storage[7] <= 8'h44;
+  storage[0] <= 16'h00a0;
+  storage[1] <= 16'h0055;
+  storage[2] <= 16'h0099;
+  storage[3] <= 16'h0044;
 end
 */
 

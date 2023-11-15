@@ -44,11 +44,10 @@ reg mem_write_enable = 0;
 // Clock.
 reg [21:0] count = 0;
 reg [5:0]  state = 0;
-//reg [19:0] clock_div;
+reg [4:0] clock_div;
 reg [14:0] delay_loop;
 wire clk;
-//assign clk = clock_div[1];
-assign clk = raw_clk;
+assign clk = clock_div[1];
 
 // Registers.
 reg [15:0] pc = 0;
@@ -123,12 +122,14 @@ wire eeprom_ready;
 // This block is simply a clock divider for the raw_clk.
 always @(posedge raw_clk) begin
   count <= count + 1;
-  //clock_div <= clock_div + 1;
+  clock_div <= clock_div + 1;
 end
 
 // Debug: This block simply drives the 8x4 LEDs.
 always @(posedge raw_clk) begin
   case (count[9:7])
+    //3'b000: begin column_value <= 4'b0111; leds_value <= ~temp[7:0]; end
+    //3'b010: begin column_value <= 4'b1011; leds_value <= ~ea[7:0]; end
     3'b000: begin column_value <= 4'b0111; leds_value <= ~accum[7:0]; end
     3'b010: begin column_value <= 4'b1011; leds_value <= ~instruction[15:8]; end
     3'b100: begin column_value <= 4'b1101; leds_value <= ~pc[7:0]; end
@@ -182,6 +183,12 @@ parameter STATE_EEPROM_READ =  43;
 parameter STATE_EEPROM_WAIT =  44;
 parameter STATE_EEPROM_WRITE = 45;
 parameter STATE_EEPROM_DONE =  46;
+
+parameter STATE_DEBUG =        47;
+parameter STATE_MEM_DEBUG_0 =  48;
+parameter STATE_MEM_DEBUG_1 =  49;
+parameter STATE_MEM_DEBUG_2 =  50;
+parameter STATE_MEM_DEBUG_3 =  51;
 
 parameter DEST_NONE = 0;
 parameter DEST_A    = 1;
@@ -245,6 +252,7 @@ always @(posedge clk) begin
 
             //state <= STATE_EEPROM_START;
             state <= STATE_FETCH_OP_0;
+            //state <= STATE_MEM_DEBUG_0;
           end else begin
             delay_loop <= delay_loop - 1;
           end
@@ -538,7 +546,7 @@ always @(posedge clk) begin
           mem_bus_enable <= 1;
           mem_write_enable <= 0;
           mem_address <= ea;
-          state <= STATE_ALU_FETCH_DATA_1;
+          state <= STATE_ALU_FETCH_PTR_1;
         end
       STATE_ALU_FETCH_PTR_1:
         begin
@@ -666,6 +674,7 @@ always @(posedge clk) begin
               begin
                 mem_bus_enable <= 1;
                 mem_write_enable <= 1;
+                mem_address <= ea;
                 mem_write <= temp;
                 state <= STATE_WRITE_BACK_1;
               end
@@ -802,6 +811,39 @@ always @(posedge clk) begin
       STATE_HALTED:
         begin
           state <= STATE_HALTED;
+        end
+      STATE_DEBUG:
+        begin
+          state <= STATE_DEBUG;
+        end
+      STATE_MEM_DEBUG_0:
+        begin
+          mem_bus_enable <= 1;
+          mem_write_enable <= 1;
+          mem_address <= 10;
+          mem_write <= 8'h55;
+          state <= STATE_MEM_DEBUG_1;
+        end
+      STATE_MEM_DEBUG_1:
+        begin
+          mem_bus_enable <= 0;
+          mem_write_enable <= 0;
+          mem_write <= 0;
+          state <= STATE_MEM_DEBUG_2;
+        end
+      STATE_MEM_DEBUG_2:
+        begin
+          mem_bus_enable <= 1;
+          mem_write_enable <= 0;
+          //mem_address <= 14'h2001;
+          mem_address <= 10;
+          state <= STATE_MEM_DEBUG_3;
+        end
+      STATE_MEM_DEBUG_3:
+        begin
+          mem_bus_enable <= 0;
+          accum <= mem_read;
+          state <= STATE_DEBUG;
         end
     endcase
 end

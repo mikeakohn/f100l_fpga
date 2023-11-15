@@ -44,19 +44,19 @@ reg peripherals_write_enable;
 reg block_ram_write_enable;
 
 wire block_ram_chip_enable;
-assign block_ram_chip_enable = bus_enable & address[15] & address[14];
+assign block_ram_chip_enable = bus_enable & address[14] & address[13];
 
-// Based on the selected bank of memory (address[15:14]) select if
+// Based on the selected bank of memory (address[14:13]) select if
 // memory should read from ram.v, rom.v, peripherals.v or hardcoded 0.
-assign data_out = address[15] == 0 ?
-  (address[14] == 0 ? ram_data_out         : rom_data_out) :
-  (address[14] == 0 ? peripherals_data_out : block_ram_data_out);
+assign data_out = address[14] == 0 ?
+  (address[13] == 0 ? ram_data_out         : rom_data_out) :
+  (address[13] == 0 ? peripherals_data_out : block_ram_data_out);
 
 // Based on the selected bank of memory, decided which module the
 // memory write should be sent to.
 always @(posedge clk) begin
   if (write_enable) begin
-    case (address[15:14])
+    case (address[14:13])
       2'b00:
         begin
           ram_data_in <= data_in;
@@ -105,7 +105,7 @@ ram ram_0(
   .data_in      (ram_data_in),
   .data_out     (ram_data_out),
   .write_enable (ram_write_enable),
-  .clk          (clk),
+  .clk          (raw_clk),
 );
 
 peripherals peripherals_0(
@@ -127,7 +127,7 @@ ram ram_1(
   .data_in      (block_ram_data_in),
   .data_out     (block_ram_data_out),
   .write_enable (block_ram_write_enable),
-  .clk          (clk),
+  .clk          (raw_clk),
 );
 
 /*
