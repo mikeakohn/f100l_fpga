@@ -22,7 +22,11 @@ test:
 	naken_asm -l -type bin -o load_byte.bin test/load_byte.asm
 	#naken_asm -l -type bin -o blink.bin test/blink.asm
 
-rom:
+rom_0:
+	naken_asm -l -type bin -o p_mode.bin test/p_mode.asm
+	python3 tools/lst2verilog.py p_mode.lst > src/rom.v
+
+rom_1:
 	naken_asm -l -type bin -o load_byte.bin test/load_byte.asm
 	python3 tools/lst2verilog.py load_byte.lst > src/rom.v
 

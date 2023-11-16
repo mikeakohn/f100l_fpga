@@ -95,6 +95,7 @@ wire [1:0] j_mode;
 wire [3:0] bits;
 wire [4:0] bits5;
 reg do_jump;
+reg do_ptr_writeback;
 
 assign r_mode = instruction[9:8];
 assign s_mode = instruction[7:6];
@@ -156,10 +157,10 @@ parameter STATE_WRITE_BACK_JUMP_W_0 =  12;
 parameter STATE_WRITE_BACK_JUMP_W_1 =  13;
 parameter STATE_FETCH_JUMP_W_0 =       14;
 parameter STATE_FETCH_JUMP_W_1 =       15;
-parameter STATE_ALU_WRITE_BACK_PTR_0 = 16;
-parameter STATE_ALU_WRITE_BACK_PTR_1 = 17;
-parameter STATE_ALU_FETCH_PTR_0 =      18;
-parameter STATE_ALU_FETCH_PTR_1 =      19;
+parameter STATE_ALU_FETCH_PTR_0 =      16;
+parameter STATE_ALU_FETCH_PTR_1 =      17;
+parameter STATE_ALU_WRITE_BACK_PTR_0 = 18;
+parameter STATE_ALU_WRITE_BACK_PTR_1 = 19;
 parameter STATE_ALU_FETCH_DATA_0 =     20;
 parameter STATE_ALU_FETCH_DATA_1 =     21;
 parameter STATE_ALU_EXECUTE =          22;
@@ -263,6 +264,7 @@ always @(posedge clk) begin
         end
       STATE_FETCH_OP_0:
         begin
+          do_ptr_writeback <= 0;
           mem_bus_enable <= 1;
           mem_write_enable <= 0;
           mem_address <= pc;
@@ -313,33 +315,32 @@ always @(posedge clk) begin
               end
             default:
               begin
-                if (instruction[11] == 0)
+                if (instruction[11] == 0) begin
                   if (instruction[10:0] != 0) begin
                     // N (short address).
                     ea <= instruction[10:0];
-                    state <= STATE_ALU_FETCH_DATA_0;
                   end else begin
                     // #D aka ,D
                     ea <= pc;
                     pc <= pc + 1;
-                    //state <= STATE_ALU_FETCH_DATA_EA_0;
-                    state <= STATE_ALU_FETCH_DATA_0;
                   end
-                else
-                  if (instruction[8:0] != 0) begin
+
+                  state <= STATE_ALU_FETCH_DATA_0;
+                end else begin
+                  if (instruction[7:0] != 0) begin
                     //  [P], [P]+, [P]- aka /P, /P+, /P-
-                    ea <= instruction[8:0];
-                    if (instruction[9] == 0) begin
-                      state <= STATE_ALU_FETCH_PTR_0;
-                    end else begin
-                      state <= STATE_ALU_WRITE_BACK_PTR_0;
-                    end
+                    if (instruction[8] == 1) do_ptr_writeback <= 1;
+
+                    ea <= instruction[7:0];
+                    temp <= instruction[7:0];
                   end else begin
                     // long W aka .W
                     ea <= pc;
                     pc <= pc + 1;
-                    state <= STATE_ALU_FETCH_PTR_0;
                   end
+
+                  state <= STATE_ALU_FETCH_PTR_0;
+                end
               end
           endcase
         end
@@ -542,22 +543,6 @@ always @(posedge clk) begin
 
           state <= STATE_FETCH_OP_0;
         end
-      STATE_ALU_WRITE_BACK_PTR_0:
-        begin
-          mem_bus_enable <= 1;
-          mem_write_enable <= 1;
-          if (instruction[9] == 0)
-            mem_write <= ea + 1;
-          else
-            mem_write <= ea - 1;
-          state <= STATE_ALU_WRITE_BACK_PTR_1;
-        end
-      STATE_ALU_WRITE_BACK_PTR_1:
-        begin
-          mem_bus_enable <= 0;
-          mem_write_enable <= 0;
-          state <= STATE_ALU_FETCH_DATA_0;
-        end
       STATE_ALU_FETCH_PTR_0:
         begin
           mem_bus_enable <= 1;
@@ -569,6 +554,34 @@ always @(posedge clk) begin
         begin
           mem_bus_enable <= 0;
           ea <= mem_read;
+
+          if (do_ptr_writeback) begin
+            state <= STATE_ALU_WRITE_BACK_PTR_0;
+          end else begin
+            state <= STATE_ALU_FETCH_DATA_0;
+          end
+        end
+      STATE_ALU_WRITE_BACK_PTR_0:
+        begin
+          mem_bus_enable <= 1;
+          mem_write_enable <= 1;
+          mem_address <= temp;
+
+          // 01: [P]+ aka P+ (+ is done before ea is used).
+          // 11: [P]- aka P- (0 is done at write-back time).
+          if (instruction[9] == 0) begin
+            mem_write <= ea + 1;
+            ea <= ea + 1;
+          end else begin
+            mem_write <= ea - 1;
+          end
+
+          state <= STATE_ALU_WRITE_BACK_PTR_1;
+        end
+      STATE_ALU_WRITE_BACK_PTR_1:
+        begin
+          mem_bus_enable <= 0;
+          mem_write_enable <= 0;
           state <= STATE_ALU_FETCH_DATA_0;
         end
       STATE_ALU_FETCH_DATA_0:
@@ -666,7 +679,7 @@ always @(posedge clk) begin
             cr[CR_S] <= temp[15];
             cr[CR_Z] <= temp[15:0] == 0;
           end
- 
+
           if (alu_op == OP_SUB || alu_op == OP_SBS)
             cr[CR_V] <= (accum[15] != data[15]) && (temp[15] == accum[15]);
           else if (alu_op == OP_ADD || alu_op == OP_ADS)
