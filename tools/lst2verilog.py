@@ -27,11 +27,18 @@ print("  case (address)")
 
 indent = "    "
 address = 0
+org = 0
 
 fp = open(sys.argv[1], "r")
 
 for line in fp:
-  if not line.startswith("0x0"): continue
+  if line.startswith(".org"):
+    line = line.replace(".org", "").strip()
+    address = int(line, 0)
+    org = address
+    continue
+
+  if not line.startswith("0x2"): continue
   line = line.strip()
   data = line[:12].strip()
   instruction = line[12:].strip()
@@ -47,7 +54,7 @@ for line in fp:
   if instruction != "":
     print(indent + "// " + instruction)
 
-  print(indent + str(address) + ": data <= 16'h" + opcode + ";")
+  print(indent + str(address - org) + ": data <= 16'h" + opcode + ";")
   address += 1
 
 fp.close()

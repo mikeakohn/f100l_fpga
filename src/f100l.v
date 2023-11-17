@@ -265,6 +265,7 @@ always @(posedge clk) begin
       STATE_FETCH_OP_0:
         begin
           do_ptr_writeback <= 0;
+          do_jump <= 0;
           mem_bus_enable <= 1;
           mem_write_enable <= 0;
           mem_address <= pc;
@@ -428,21 +429,33 @@ always @(posedge clk) begin
                 case (r_mode)
                   2'b10:
                     begin
-                      do_jump <= cr[bits] == j_mode[0];
-                      if (j_mode[1]) cr[bits] <= j_mode[0];
+                      if (data[bits] == j_mode[0]) begin
+                        do_jump <= 1;
+                        if (j_mode[1]) cr[bits] <= ~j_mode[0];
+                      end
                       state <= STATE_FETCH_JUMP_W_0;
                     end
                   2'b11:
                     begin
-                      do_jump <= data[bits] == j_mode[0];
-                      if (j_mode[1]) data[bits] <= j_mode[0];
-                      state <= STATE_FETCH_JUMP_W_0;
+                      if (data[bits] == j_mode[0]) begin
+                        do_jump <= 1;
+                        if (j_mode[1]) begin
+                          data[bits] <= ~j_mode[0];
+                          state <= STATE_WRITE_BACK_JUMP_W_0;
+                        end else begin
+                          state <= STATE_FETCH_JUMP_W_0;
+                        end
+                      end else begin
+                        state <= STATE_FETCH_JUMP_W_0;
+                      end
                     end
                   default:
                     begin
-                      do_jump <= accum[bits] == j_mode[0];
-                      if (j_mode[1]) temp[bits] <= j_mode[0];
-                      state <= STATE_WRITE_BACK_JUMP_W_0;
+                      if (accum[bits] == j_mode[0]) begin
+                        do_jump <= 1;
+                        if (j_mode[1]) accum[bits] <= ~j_mode[0];
+                      end
+                      state <= STATE_FETCH_JUMP_W_0;
                     end
                 endcase
               end
@@ -450,13 +463,6 @@ always @(posedge clk) begin
               begin
                 // clr, set.
                 temp <= data[bits] <= ~j_mode[0];
-/*
-                case (j_mode)
-                  // 11: clear, 10: set
-                  2'b11: temp <= data[bits] <= 0;
-                  2'b10: temp <= data[bits] <= 1;
-                endcase
-*/
                 state <= STATE_BIT_OP_WRITE_BACK;
               end
           endcase
@@ -521,11 +527,13 @@ always @(posedge clk) begin
           mem_write_enable <= 0;
           mem_address <= ea;
           mem_write <= temp;
+          state <= STATE_WRITE_BACK_JUMP_W_1;
         end
       STATE_WRITE_BACK_JUMP_W_1:
         begin
           mem_bus_enable <= 0;
           mem_write_enable <= 0;
+          state <= STATE_FETCH_JUMP_W_0;
         end
       STATE_FETCH_JUMP_W_0:
         begin
@@ -628,6 +636,7 @@ always @(posedge clk) begin
                 if (flag_m == 0) temp <= data - accum;
                 else        temp <= data - accum + flag_c;
                 dest <= DEST_NONE;
+                cr[CR_M] <= 1;
               end
             OP_ICZ:
               begin
@@ -697,7 +706,11 @@ always @(posedge clk) begin
               end
             DEST_PC:
               begin
-                pc <= temp;
+                if (instruction[11] == 1 && instruction[7:0] != 0) begin
+                  pc <= temp;
+                end else begin
+                  pc <= ea;
+                end
                 state <= STATE_FETCH_OP_0;
               end
             DEST_EA:
@@ -790,7 +803,6 @@ always @(posedge clk) begin
           pc <= temp;
           state <= STATE_FETCH_OP_0;
         end
-      //STATE_POP_FETCH_LSP_0:
       STATE_POP_FETCH_LSP_1:
         begin
           mem_bus_enable <= 0;
@@ -865,8 +877,8 @@ always @(posedge clk) begin
         begin
           mem_bus_enable <= 1;
           mem_write_enable <= 0;
-          //mem_address <= 14'h2001;
-          mem_address <= 10;
+          mem_address <= 14'h2009;
+          //mem_address <= ea;
           state <= STATE_MEM_DEBUG_3;
         end
       STATE_MEM_DEBUG_3:

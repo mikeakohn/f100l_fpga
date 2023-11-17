@@ -5,4 +5,5 @@ abc.history
 *.asc
 *.json
 *.bin
+*.lst
 

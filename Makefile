@@ -30,9 +30,11 @@ rom_1:
 	naken_asm -l -type bin -o load_byte.bin test/load_byte.asm
 	python3 tools/lst2verilog.py load_byte.lst > src/rom.v
 
+rom_2:
+	naken_asm -l -type bin -o branch.bin test/branch.asm
+	python3 tools/lst2verilog.py branch.lst > src/rom.v
+
 clean:
-	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst
-	@rm -f blink.bin load_byte.bin store_byte.bin test_subroutine.bin
-	@rm -f button.bin
+	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst *.bin
 	@echo "Clean!"
 
