@@ -25,8 +25,8 @@ always @(address) begin
     1: data <= 16'h0015;
     // nop
     2: data <= 16'hf000;
-    // jsc 0, a, 0x2007
-    3: data <= 16'h00b0;
+    // jcs 0, a, 0x2007
+    3: data <= 16'h00a0;
     4: data <= 16'h2007;
     // set 15, A
     5: data <= 16'h00ef;

@@ -462,8 +462,23 @@ always @(posedge clk) begin
             2'b11:
               begin
                 // clr, set.
-                temp <= data[bits] <= ~j_mode[0];
-                state <= STATE_BIT_OP_WRITE_BACK;
+                case (r_mode)
+                  2'b01:
+                    begin
+                      cr[bits] <= ~j_mode[0];
+                      state <= STATE_FETCH_OP_0;
+                    end
+                  2'b11:
+                    begin
+                      temp <= data[bits] <= ~j_mode[0];
+                      state <= STATE_BIT_OP_WRITE_BACK;
+                    end
+                  default:
+                    begin
+                      accum[bits] <= ~j_mode[0];
+                      state <= STATE_FETCH_OP_0;
+                    end
+                endcase
               end
           endcase
         end
