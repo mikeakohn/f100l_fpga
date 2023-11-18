@@ -20,21 +20,23 @@ assign data_out = data;
 
 always @(address) begin
   case (address)
-    // lda #0xfffd
+    // lda #0x0f01
     0: data <= 16'h8000;
-    1: data <= 16'hfffd;
+    1: data <= 16'h0f01;
     // sto 0x005
     2: data <= 16'h4005;
-    // lda #0x8000
+    // lda #0x3050
     3: data <= 16'h8000;
-    4: data <= 16'h8000;
-    // sle #2, a
-    5: data <= 16'h0072;
-    // icz 0x005, 0x2005
-    6: data <= 16'h7005;
-    7: data <= 16'h2005;
+    4: data <= 16'h3050;
+    // setm
+    5: data <= 16'h01e5;
+    // sll #8, 0x0005
+    6: data <= 16'h0368;
+    7: data <= 16'h0005;
+    // lda 0x005
+    8: data <= 16'h8005;
     // halt
-    8: data <= 16'h0400;
+    9: data <= 16'h0400;
     default: data <= 0;
   endcase
 end

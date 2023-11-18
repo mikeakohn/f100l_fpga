@@ -50,6 +50,10 @@ rom_6:
 	naken_asm -l -type bin -o switch.bin test/switch.asm
 	python3 tools/lst2verilog.py switch.lst > src/rom.v
 
+rom_7:
+	naken_asm -l -type bin -o shift_d.bin test/shift_d.asm
+	python3 tools/lst2verilog.py shift_d.lst > src/rom.v
+
 clean:
 	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst *.bin
 	@echo "Clean!"

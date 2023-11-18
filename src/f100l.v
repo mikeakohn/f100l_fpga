@@ -135,6 +135,8 @@ always @(posedge raw_clk) begin
     3'b000: begin column_value <= 4'b0111; leds_value <= ~accum[7:0]; end
     //3'b010: begin column_value <= 4'b1011; leds_value <= ~instruction[15:8]; end
     3'b010: begin column_value <= 4'b1011; leds_value <= ~accum[15:8]; end
+    //3'b010: begin column_value <= 4'b1011; leds_value <= ~ea; end
+    //3'b010: begin column_value <= 4'b1011; leds_value <= ~temp; end
     //3'b010: begin column_value <= 4'b1011; leds_value <= ~cr; end
     3'b100: begin column_value <= 4'b1101; leds_value <= ~pc[7:0]; end
     3'b110: begin column_value <= 4'b1110; leds_value <= ~state; end
@@ -323,6 +325,7 @@ always @(posedge clk) begin
                 state <= STATE_FETCH_OP_0;
               end
             default:
+              // ALU.
               begin
                 if (instruction[11] == 0) begin
                   if (instruction[10:0] != 0) begin
@@ -422,8 +425,8 @@ always @(posedge clk) begin
                   begin
                     // Shift right: sra.d, srl.d.
                     case (j_mode[1])
-                      0: temp32 <= { accum, temp } >> bits5;
-                      1: temp32 <= sign32({ accum, temp }) >>> bits5;
+                      0: temp32 <= { accum, data[15:0] } >> bits5;
+                      1: temp32 <= sign32({ accum, data[15:0] }) >>> bits5;
                     endcase
                     state <= STATE_BIT_32_OP_WRITE_BACK;
                   end
@@ -463,10 +466,10 @@ always @(posedge clk) begin
                   end
                 else
                   begin
-                    // Shift right: sla.d, sll.d.
+                    // Shift left: sla.d, sll.d.
                     case (j_mode[1])
-                      0: temp32 <= { accum, temp } << bits5;
-                      1: temp32 <= { accum, temp } << bits5;
+                      0: temp32 <= { accum, data[15:0] } << bits5;
+                      1: temp32 <= { accum, data[15:0] } << bits5;
                     endcase
                     state <= STATE_BIT_32_OP_WRITE_BACK;
                   end
