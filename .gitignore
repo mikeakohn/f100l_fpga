@@ -6,4 +6,5 @@ abc.history
 *.json
 *.bin
 *.lst
+*.swp
 

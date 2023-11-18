@@ -281,39 +281,46 @@ always @(posedge clk) begin
         end
       STATE_START_DECODE:
         begin
-          case (instruction[15:10])
-            4'b0000_00:
-              case (r_mode)
+          case (instruction[15:12])
+            4'b0000:
+              case (instruction[11:10])
+                2'b00:
+                  begin
+                    case (r_mode)
+                      2'b01:
+                        begin
+                          data <= cr;
+                          state <= STATE_BIT_OP_EXECUTE;
+                        end
+                      2'b11:
+                        begin
+                          state <= STATE_BIT_OP_READ_W_0;
+                        end
+                      default:
+                        begin
+                          data <= accum;
+                          state <= STATE_BIT_OP_EXECUTE;
+                        end
+                    endcase
+                  end
                 2'b01:
                   begin
-                    data <= cr;
-                    state <= STATE_BIT_OP_EXECUTE;
+                    state <= STATE_HALTED;
                   end
                 2'b11:
                   begin
-                    state <= STATE_BIT_OP_READ_W_0;
-                  end
-                default:
-                  begin
-                    data <= accum;
-                    state <= STATE_BIT_OP_EXECUTE;
+                    // rtn, rtc (pop cr, pop pc).
+                    mem_bus_enable <= 1;
+                    mem_write_enable <= 0;
+                    mem_address <= 0;
+                    state <= STATE_POP_FETCH_LSP_1;
                   end
               endcase
-            4'b0000_01:
-              if (instruction[11:10] == 2'b01) begin
-                state <= STATE_HALTED;
-              end else begin
+            4'b0001:
+              begin
                 // sjm: docs say pc <- pc + 1 + A, but pc is already pc + 1.
                 pc <= pc + accum;
-                state <= STATE_FETCH_OP_1;
-              end
-            4'b0000_11:
-              begin
-                // rtn, rtc (pop cr, pop pc).
-                mem_bus_enable <= 1;
-                mem_write_enable <= 0;
-                mem_address <= 0;
-                state <= STATE_POP_FETCH_LSP_1;
+                state <= STATE_FETCH_OP_0;
               end
             default:
               begin
