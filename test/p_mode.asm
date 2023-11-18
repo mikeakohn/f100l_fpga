@@ -1,5 +1,7 @@
 .f100_l
 
+.org 0x2000
+
 main:
   lda #20
   sto 5

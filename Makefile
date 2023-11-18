@@ -34,6 +34,10 @@ rom_2:
 	naken_asm -l -type bin -o branch.bin test/branch.asm
 	python3 tools/lst2verilog.py branch.lst > src/rom.v
 
+rom_3:
+	naken_asm -l -type bin -o compare.bin test/compare.asm
+	python3 tools/lst2verilog.py compare.lst > src/rom.v
+
 clean:
 	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst *.bin
 	@echo "Clean!"

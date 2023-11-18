@@ -23,23 +23,22 @@ always @(address) begin
     // lda #0x0015
     0: data <= 16'h8000;
     1: data <= 16'h0015;
-    // nop
-    2: data <= 16'hf000;
-    // jcs 0, a, 0x2007
-    3: data <= 16'h00a0;
-    4: data <= 16'h2007;
-    // set 15, A
-    5: data <= 16'h00ef;
-    // halt
-    6: data <= 16'h0400;
-    // set 14, A
-    7: data <= 16'h00ee;
+    // cmp #0x0014
+    2: data <= 16'hb000;
+    3: data <= 16'h0014;
+    // jbs z, cr, 0x2009
+    4: data <= 16'h0191;
+    5: data <= 16'h2009;
+    // lda #0x0100
+    6: data <= 16'h8000;
+    7: data <= 16'h0100;
     // halt
     8: data <= 16'h0400;
-    // set 13, A
-    9: data <= 16'h00ed;
+    // lda #0x0080
+    9: data <= 16'h8000;
+    10: data <= 16'h0080;
     // halt
-    10: data <= 16'h0400;
+    11: data <= 16'h0400;
     default: data <= 0;
   endcase
 end

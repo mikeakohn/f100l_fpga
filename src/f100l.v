@@ -135,6 +135,7 @@ always @(posedge raw_clk) begin
     3'b000: begin column_value <= 4'b0111; leds_value <= ~accum[7:0]; end
     //3'b010: begin column_value <= 4'b1011; leds_value <= ~instruction[15:8]; end
     3'b010: begin column_value <= 4'b1011; leds_value <= ~accum[15:8]; end
+    //3'b010: begin column_value <= 4'b1011; leds_value <= ~cr; end
     3'b100: begin column_value <= 4'b1101; leds_value <= ~pc[7:0]; end
     3'b110: begin column_value <= 4'b1110; leds_value <= ~state; end
     default: begin column_value <= 4'b1111; leds_value <= 8'hff; end
@@ -427,8 +428,9 @@ always @(posedge clk) begin
               // jbc, jbs, jcs, jsc.
               begin
                 case (r_mode)
-                  2'b10:
+                  2'b01:
                     begin
+                      // cr.
                       if (data[bits] == j_mode[0]) begin
                         do_jump <= 1;
                         if (j_mode[1]) cr[bits] <= ~j_mode[0];
@@ -437,6 +439,7 @@ always @(posedge clk) begin
                     end
                   2'b11:
                     begin
+                      // W.
                       if (data[bits] == j_mode[0]) begin
                         do_jump <= 1;
                         if (j_mode[1]) begin
@@ -451,6 +454,7 @@ always @(posedge clk) begin
                     end
                   default:
                     begin
+                      // accum.
                       if (accum[bits] == j_mode[0]) begin
                         do_jump <= 1;
                         if (j_mode[1]) accum[bits] <= ~j_mode[0];
@@ -649,7 +653,7 @@ always @(posedge clk) begin
             OP_CMP:
               begin
                 if (flag_m == 0) temp <= data - accum;
-                else        temp <= data - accum + flag_c;
+                else             temp <= data - accum + flag_c - 1;
                 dest <= DEST_NONE;
                 cr[CR_M] <= 1;
               end
@@ -696,13 +700,9 @@ always @(posedge clk) begin
         end
       STATE_WRITE_BACK:
         begin
-          if (alu_op == OP_CAL) begin
-            cr[CR_M] <= 0;
-          end else begin
-            cr[CR_C] <= temp[16];
-            cr[CR_S] <= temp[15];
-            cr[CR_Z] <= temp[15:0] == 0;
-          end
+          cr[CR_C] <= temp[16];
+          cr[CR_S] <= temp[15];
+          cr[CR_Z] <= temp[15:0] == 0;
 
           if (alu_op == OP_SUB || alu_op == OP_SBS)
             cr[CR_V] <= (accum[15] != data[15]) && (temp[15] == accum[15]);
@@ -804,6 +804,9 @@ always @(posedge clk) begin
         end
       STATE_CAL_WRITE_LSP_0:
         begin
+          // cal instruction clears m, I would guess after it pushes it?
+          cr[CR_M] <= 0;
+
           mem_bus_enable <= 1;
           mem_write_enable <= 1;
           mem_address <= 0;
