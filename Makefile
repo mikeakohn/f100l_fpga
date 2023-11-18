@@ -38,6 +38,14 @@ rom_3:
 	naken_asm -l -type bin -o compare.bin test/compare.asm
 	python3 tools/lst2verilog.py compare.lst > src/rom.v
 
+rom_4:
+	naken_asm -l -type bin -o dec_jmp.bin test/dec_jmp.asm
+	python3 tools/lst2verilog.py dec_jmp.lst > src/rom.v
+
+rom_5:
+	naken_asm -l -type bin -o rotate.bin test/rotate.asm
+	python3 tools/lst2verilog.py rotate.lst > src/rom.v
+
 clean:
 	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst *.bin
 	@echo "Clean!"

@@ -282,7 +282,7 @@ always @(posedge clk) begin
       STATE_START_DECODE:
         begin
           case (instruction[15:10])
-            4'b0000:
+            4'b0000_00:
               case (r_mode)
                 2'b01:
                   begin
@@ -299,7 +299,7 @@ always @(posedge clk) begin
                     state <= STATE_BIT_OP_EXECUTE;
                   end
               endcase
-            4'b0001:
+            4'b0000_01:
               if (instruction[11:10] == 2'b01) begin
                 state <= STATE_HALTED;
               end else begin
@@ -307,7 +307,7 @@ always @(posedge clk) begin
                 pc <= pc + accum;
                 state <= STATE_FETCH_OP_1;
               end
-            4'b0011:
+            4'b0000_11:
               begin
                 // rtn, rtc (pop cr, pop pc).
                 mem_bus_enable <= 1;
@@ -382,11 +382,31 @@ always @(posedge clk) begin
                 // Shift right: sra, srl, sre.
                 if (flag_m == 0)
                   begin
-                    // Shift left: sla, sll, sle.
+                    // Shift left: sra, srl, sre.
                     case (j_mode)
                       // x0: arithmetic, 10: logical, 11: rotate
                       2'b10: temp <= data >> bits;
-                      2'b11: temp <= { 0, data[0], data[15:1] };
+                      2'b11:
+                        begin
+                          case (bits)
+                             0: temp <= data;
+                             1: temp <= { data[0],    data[15:1]  };
+                             2: temp <= { data[1:0],  data[15:2]  };
+                             3: temp <= { data[2:0],  data[15:3]  };
+                             4: temp <= { data[3:0],  data[15:4]  };
+                             5: temp <= { data[4:0],  data[15:5]  };
+                             6: temp <= { data[5:0],  data[15:6]  };
+                             7: temp <= { data[6:0],  data[15:7]  };
+                             8: temp <= { data[7:0],  data[15:8]  };
+                             9: temp <= { data[8:0],  data[15:9]  };
+                            10: temp <= { data[9:0],  data[15:10] };
+                            11: temp <= { data[10:0], data[15:11] };
+                            12: temp <= { data[11:0], data[15:12] };
+                            13: temp <= { data[12:0], data[15:13] };
+                            14: temp <= { data[13:0], data[15:14] };
+                            15: temp <= { data[14:0], data[15]    };
+                          endcase
+                        end
                       default: temp <= sign16(data) >>> bits;
                     endcase
                     state <= STATE_BIT_OP_WRITE_BACK;
@@ -409,7 +429,27 @@ always @(posedge clk) begin
                     case (j_mode)
                       // x0: arithmetic, 10: logical, 11: rotate
                       2'b10: temp <= data << bits;
-                      2'b11: temp <= { 0, data[14:0], data[15] };
+                      2'b11:
+                        begin
+                         case (bits)
+                            0: temp <= data;
+                            1: temp <= { data[14:0], data[15]    };
+                            2: temp <= { data[13:0], data[15:14] };
+                            3: temp <= { data[12:0], data[15:13] };
+                            4: temp <= { data[11:0], data[15:12] };
+                            5: temp <= { data[10:0], data[15:11] };
+                            6: temp <= { data[9:0],  data[15:10] };
+                            7: temp <= { data[8:0],  data[15:9]  };
+                            8: temp <= { data[7:0],  data[15:8]  };
+                            9: temp <= { data[6:0],  data[15:7]  };
+                           10: temp <= { data[5:0],  data[15:6]  };
+                           11: temp <= { data[4:0],  data[15:5]  };
+                           12: temp <= { data[3:0],  data[15:4]  };
+                           13: temp <= { data[2:0],  data[15:3]  };
+                           14: temp <= { data[1:0],  data[15:2]  };
+                           15: temp <= { data[0],    data[15:1]  };
+                         endcase
+                        end
                       default: temp <= data << bits;
                     endcase
                     state <= STATE_BIT_OP_WRITE_BACK;
@@ -748,6 +788,7 @@ always @(posedge clk) begin
                 mem_bus_enable <= 1;
                 mem_write_enable <= 1;
                 mem_write <= temp;
+                mem_address <= ea;
                 state <= STATE_WRITE_BACK_1;
               end
           endcase
@@ -758,9 +799,9 @@ always @(posedge clk) begin
           mem_write_enable <= 0;
           mem_write <= 0;
 
-          if (dest == OP_ICZ) begin
-            // jbs 1, cr, W
-            instruction <= 16'b0000_0001_1001_0001;
+          if (alu_op == OP_ICZ) begin
+            // Change instruction to: jbc z, cr, W
+            instruction <= 16'b0000_0001_1000_0001;
             state <= STATE_START_DECODE;
           end else begin
             state <= STATE_FETCH_OP_0;

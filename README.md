@@ -69,13 +69,13 @@ Flags are stored in the CR register which contains the following bits:
 
     00000000_0FMCSVZI
 
-    F - ?
-    M - Changes the way some memory operations are done.
+    F - Fail
+    M - Multi length
     C - Carry flag
     S - Sign flag
     V - Overflow flag
     Z - Zero flag
-    I - ?
+    I - Program Interrupt Lock-out
 
 Instructions
 ============
