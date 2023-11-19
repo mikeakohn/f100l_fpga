@@ -309,20 +309,20 @@ always @(posedge clk) begin
                   begin
                     state <= STATE_HALTED;
                   end
-                2'b11:
-                  begin
-                    // rtn, rtc (pop cr, pop pc).
-                    mem_bus_enable <= 1;
-                    mem_write_enable <= 0;
-                    mem_address <= 0;
-                    state <= STATE_POP_FETCH_LSP_1;
-                  end
               endcase
             4'b0001:
               begin
                 // sjm: docs say pc <- pc + 1 + A, but pc is already pc + 1.
                 pc <= pc + accum;
                 state <= STATE_FETCH_OP_0;
+              end
+            4'b0011:
+              begin
+                // rtn, rtc (pop cr, pop pc).
+                mem_bus_enable <= 1;
+                mem_write_enable <= 0;
+                mem_address <= 0;
+                state <= STATE_POP_FETCH_LSP_1;
               end
             default:
               // ALU.
@@ -697,7 +697,7 @@ always @(posedge clk) begin
               end
             OP_CAL:
               begin
-                temp <= accum;  // FIXME
+                temp <= data;  // FIXME
                 dest <= DEST_CALL;
               end
             OP_CMP:
@@ -869,7 +869,8 @@ always @(posedge clk) begin
           mem_bus_enable <= 0;
           mem_write_enable <= 0;
           mem_write <= 0;
-          pc <= temp;
+          //pc <= temp;
+          pc <= ea;
           state <= STATE_FETCH_OP_0;
         end
       STATE_POP_FETCH_LSP_1:
@@ -888,7 +889,7 @@ always @(posedge clk) begin
       STATE_POP_CR_1:
         begin
           mem_bus_enable <= 0;
-          if (instruction[11]) cr <= mem_read;
+          if (instruction[11] == 0) cr <= mem_read;
           state <= STATE_POP_PC_0;
         end
       STATE_POP_PC_0:
