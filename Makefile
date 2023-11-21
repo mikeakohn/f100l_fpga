@@ -17,10 +17,9 @@ default:
 program:
 	iceFUNprog $(PROGRAM).bin
 
-.PHONY: test
-test:
-	naken_asm -l -type bin -o load_byte.bin test/load_byte.asm
-	#naken_asm -l -type bin -o blink.bin test/blink.asm
+blink:
+	naken_asm -l -type bin -o blink.bin test/blink.asm
+	python3 tools/lst2verilog.py blink.lst > src/rom.v
 
 rom_0:
 	naken_asm -l -type bin -o p_mode.bin test/p_mode.asm

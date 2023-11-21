@@ -27,9 +27,9 @@ module eeprom
 );
 
 reg [2:0] state = 0;
-reg [2:0] clock_div;
+reg [3:0] clock_div;
 wire clk;
-assign clk = clock_div[2];
+assign clk = clock_div[3];
 
 reg [13:0] command;
 reg [3:0] count;

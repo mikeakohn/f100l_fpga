@@ -67,7 +67,7 @@ always @(posedge clk) begin
       8: ioport <= data_in;
       9:
         begin
-          case (data_in)
+          case (data_in[7:0])
             60: speaker_value_high <= 45866; // C4  261.63
             61: speaker_value_high <= 43293; // C#4 277.18
             62: speaker_value_high <= 40863; // D4 293.66

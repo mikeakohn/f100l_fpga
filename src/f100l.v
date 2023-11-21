@@ -108,9 +108,12 @@ wire [3:0] alu_op;
 assign alu_op = instruction[15:12];
 
 // Eeprom.
-reg  [8:0] eeprom_count;
+reg  [9:0] eeprom_count;
 wire [7:0] eeprom_data_out;
+reg  [7:0] eeprom_lsb;
+//reg [15:0] eeprom_data_in;
 reg [10:0] eeprom_address;
+reg [15:0] eeprom_mem_address;
 reg eeprom_strobe = 0;
 wire eeprom_ready;
 
@@ -260,7 +263,6 @@ always @(posedge clk) begin
 
             //state <= STATE_EEPROM_START;
             state <= STATE_FETCH_OP_0;
-            //state <= STATE_MEM_DEBUG_0;
           end else begin
             delay_loop <= delay_loop - 1;
           end
@@ -923,6 +925,70 @@ always @(posedge clk) begin
       STATE_HALTED:
         begin
           state <= STATE_HALTED;
+        end
+      STATE_ERROR:
+        begin
+          state <= STATE_ERROR;
+        end
+      STATE_EEPROM_START:
+        begin
+          // Initialize values for reading from SPI-like EEPROM.
+          if (eeprom_ready) begin
+            eeprom_mem_address <= 16'h6000;
+            eeprom_count <= 0;
+            state <= STATE_EEPROM_READ;
+          end
+        end
+      STATE_EEPROM_READ:
+        begin
+          // Set the next EEPROM address to read from and strobe.
+          eeprom_address <= eeprom_count;
+          //mem_bus_enable <= 1;
+          //mem_address <= eeprom_count;
+          eeprom_strobe <= 1;
+          state <= STATE_EEPROM_WAIT;
+        end
+      STATE_EEPROM_WAIT:
+        begin
+          // Wait until 8 bits are clocked in.
+          eeprom_strobe <= 0;
+
+          if (eeprom_ready) begin
+            mem_bus_enable <= 0;
+            eeprom_count <= eeprom_count + 1;
+
+            if (eeprom_count[1] == 1) begin
+              // After reading an odd byte, store the 16 bit value to RAM.
+              mem_write <= { eeprom_data_out, eeprom_lsb };
+              state <= STATE_EEPROM_WRITE;
+            end else begin
+              // After reading in an even byte, save to eeprom_lsb and
+              // read the upper byte.
+              eeprom_lsb <= eeprom_data_out;
+              state <= STATE_EEPROM_READ;
+            end
+          end
+        end
+      STATE_EEPROM_WRITE:
+        begin
+          // Write value read from EEPROM into memory.
+          mem_bus_enable <= 1;
+          mem_write_enable <= 1;
+          mem_address <= eeprom_mem_address;
+          eeprom_mem_address <= eeprom_mem_address + 1;
+          state <= STATE_EEPROM_DONE;
+        end
+      STATE_EEPROM_DONE:
+        begin
+          // Finish writing and read next byte if needed.
+          mem_bus_enable <= 0;
+          mem_write_enable <= 0;
+
+          if (eeprom_count == 0)
+            // Read in 1024 bytes.
+            state <= STATE_FETCH_OP_0;
+          else
+            state <= STATE_EEPROM_READ;
         end
       STATE_DEBUG:
         begin
