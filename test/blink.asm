@@ -9,6 +9,7 @@ main:
   neq #1
   sto 0x4008
 delay_1:
+  nop
   icz 10, delay_1
   neq #1
   sto 0x4008

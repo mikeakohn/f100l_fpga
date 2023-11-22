@@ -28,24 +28,26 @@ always @(address) begin
     // neq #0x0001
     3: data <= 16'hd000;
     4: data <= 16'h0001;
-    // sto long 0x4008
+    // sto 0x4008
     5: data <= 16'h4800;
     6: data <= 16'h4008;
+    // nop
+    7: data <= 16'hf000;
     // icz 0x00a, 0x2007
-    7: data <= 16'h700a;
-    8: data <= 16'h2007;
+    8: data <= 16'h700a;
+    9: data <= 16'h2007;
     // neq #0x0001
-    9: data <= 16'hd000;
-    10: data <= 16'h0001;
-    // sto long 0x4008
-    11: data <= 16'h4800;
-    12: data <= 16'h4008;
-    // icz 0x00a, 0x200d
-    13: data <= 16'h700a;
-    14: data <= 16'h200d;
-    // jmp long 0x2003
-    15: data <= 16'hf800;
-    16: data <= 16'h2003;
+    10: data <= 16'hd000;
+    11: data <= 16'h0001;
+    // sto 0x4008
+    12: data <= 16'h4800;
+    13: data <= 16'h4008;
+    // icz 0x00a, 0x200e
+    14: data <= 16'h700a;
+    15: data <= 16'h200e;
+    // jmp 0x2003
+    16: data <= 16'hf800;
+    17: data <= 16'h2003;
     default: data <= 0;
   endcase
 end
