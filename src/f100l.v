@@ -208,6 +208,8 @@ parameter DEST_EA   = 3;
 parameter DEST_CALL = 4;
 parameter DEST_ICZ  = 5;
 
+// Note: 0x3000 and 0xe000 appear to be open. Could add an "OR" instruction
+// and something else.
 parameter OP_ADD = 4'h9;
 parameter OP_ADS = 4'h5;
 parameter OP_AND = 4'hc;
