@@ -6,7 +6,7 @@ start:
   ;; Setup stack (lsp) to point to start at 0x100.
   lda #0xff
   sto 0
-  ;; Reset counter.
+  ;; Reset LED value.
   lda #0
   sto 11
   ;; Point location 12 to the song.
@@ -16,9 +16,10 @@ main:
   cal toggle_led
   cal delay
   lda [12]
+  sto 0x4009
+  clrm
   cmp #0
   jz main
-  sto 0x4009
   lda #1
   ads 12
   jmp main

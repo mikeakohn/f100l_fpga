@@ -31,67 +31,39 @@ always @(address) begin
     5: data <= 16'h0000;
     // sto 0x00b
     6: data <= 16'h400b;
-    // lda #0x2029
-    7: data <= 16'h8000;
-    8: data <= 16'h2029;
-    // sto 0x00c
-    9: data <= 16'h400c;
-    // cal 0x201a
-    10: data <= 16'h2800;
-    11: data <= 16'h201a;
-    // cal 0x2022
-    12: data <= 16'h2800;
-    13: data <= 16'h2022;
-    // lda [0x0c]
-    14: data <= 16'h880c;
-    // cmp #0x0000
-    15: data <= 16'hb000;
-    16: data <= 16'h0000;
-    // jbs z, cr, 0x200a
-    17: data <= 16'h0191;
-    18: data <= 16'h200a;
-    // sto 0x4009
-    19: data <= 16'h4800;
-    20: data <= 16'h4009;
-    // lda #0x0001
-    21: data <= 16'h8000;
-    22: data <= 16'h0001;
-    // ads 0x00c
-    23: data <= 16'h500c;
-    // jmp 0x200a
-    24: data <= 16'hf800;
-    25: data <= 16'h200a;
+    // cal 0x200d
+    7: data <= 16'h2800;
+    8: data <= 16'h200d;
+    // cal 0x2014
+    9: data <= 16'h2800;
+    10: data <= 16'h2014;
+    // jmp 0x2007
+    11: data <= 16'hf800;
+    12: data <= 16'h2007;
     // lda 0x00b
-    26: data <= 16'h800b;
+    13: data <= 16'h800b;
     // neq #0x0001
-    27: data <= 16'hd000;
-    28: data <= 16'h0001;
+    14: data <= 16'hd000;
+    15: data <= 16'h0001;
     // sto 0x00b
-    29: data <= 16'h400b;
+    16: data <= 16'h400b;
     // sto 0x4008
-    30: data <= 16'h4800;
-    31: data <= 16'h4008;
-    // lda 0x100
-    32: data <= 16'h8100;
+    17: data <= 16'h4800;
+    18: data <= 16'h4008;
     // rtn
-    33: data <= 16'h3000;
+    19: data <= 16'h3000;
     // lda #0x0000
-    34: data <= 16'h8000;
-    35: data <= 16'h0000;
+    20: data <= 16'h8000;
+    21: data <= 16'h0000;
     // sto 0x00a
-    36: data <= 16'h400a;
+    22: data <= 16'h400a;
     // nop
-    37: data <= 16'hf000;
-    // icz 0x00a, 0x2025
-    38: data <= 16'h700a;
-    39: data <= 16'h2025;
+    23: data <= 16'hf000;
+    // icz 0x00a, 0x2017
+    24: data <= 16'h700a;
+    25: data <= 16'h2017;
     // rtn
-    40: data <= 16'h3000;
-    // data
-    41: data <= 16'h003c;
-    42: data <= 16'h0040;
-    43: data <= 16'h0043;
-    44: data <= 16'h0000;
+    26: data <= 16'h3000;
     default: data <= 0;
   endcase
 end

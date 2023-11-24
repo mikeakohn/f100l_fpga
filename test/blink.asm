@@ -6,7 +6,7 @@ start:
   ;; Setup stack (lsp) to point to start at 0x100.
   lda #0xff
   sto 0
-  ;; Reset counter.
+  ;; Reset LED value.
   lda #0
   sto 11
 main:
