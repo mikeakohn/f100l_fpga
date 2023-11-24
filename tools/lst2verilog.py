@@ -28,6 +28,7 @@ print("  case (address)")
 indent = "    "
 address = 0
 org = 0
+in_data = False
 
 fp = open(sys.argv[1], "r")
 
@@ -36,6 +37,21 @@ for line in fp:
     line = line.replace(".org", "").strip()
     address = int(line, 0)
     org = address
+    continue
+
+  if line.startswith("data sections:"):
+    in_data = True
+
+  if in_data:
+    if not line.startswith("2"): continue
+    data = line.split(":")[1]
+    data = data[:40].strip()
+    tokens = data.split()
+    print("    // data")
+    for i in range(0, len(tokens), 2):
+      data = tokens[i + 1] + tokens[i + 0]
+      print(indent + str(address - org) + ": data <= 16'h" + data + ";")
+      address += 1
     continue
 
   if not line.startswith("0x2"): continue

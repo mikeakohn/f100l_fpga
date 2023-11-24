@@ -7,7 +7,8 @@ SOURCE= \
   src/memory_bus.v \
   src/peripherals.v \
   src/ram.v \
-  src/rom.v
+  src/rom.v \
+  src/spi.v
 
 default:
 	yosys -q -p "synth_ice40 -top $(PROGRAM) -json $(PROGRAM).json" $(SOURCE)
@@ -56,6 +57,10 @@ rom_7:
 rom_8:
 	naken_asm -l -type bin -o call_ret.bin test/call_ret.asm
 	python3 tools/lst2verilog.py call_ret.lst > src/rom.v
+
+play_song:
+	naken_asm -l -type bin -o play_song.bin test/play_song.asm
+	python3 tools/lst2verilog.py play_song.lst > src/rom.v
 
 clean:
 	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst *.bin
