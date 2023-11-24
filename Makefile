@@ -60,7 +60,7 @@ rom_8:
 
 play_song:
 	naken_asm -l -type bin -o play_song.bin test/play_song.asm
-	python3 tools/lst2verilog.py play_song.lst > src/rom.v
+	#python3 tools/lst2verilog.py play_song.lst > src/rom.v
 
 clean:
 	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst *.bin

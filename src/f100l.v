@@ -108,7 +108,7 @@ wire [3:0] alu_op;
 assign alu_op = instruction[15:12];
 
 // Eeprom.
-reg  [9:0] eeprom_count;
+reg [10:0] eeprom_count;
 wire [7:0] eeprom_data_out;
 reg  [7:0] eeprom_lsb;
 //reg [15:0] eeprom_data_in;
@@ -132,15 +132,10 @@ end
 // Debug: This block simply drives the 8x4 LEDs.
 always @(posedge raw_clk) begin
   case (count[9:7])
-    //3'b000: begin column_value <= 4'b0111; leds_value <= ~temp[7:0]; end
-    //3'b010: begin column_value <= 4'b1011; leds_value <= ~ea[7:0]; end
-    //3'b000: begin column_value <= 4'b0111; leds_value <= ~accum[15:8]; end
-    3'b000: begin column_value <= 4'b0111; leds_value <= ~accum[7:0]; end
+    //3'b000: begin column_value <= 4'b0111; leds_value <= ~instruction[7:0]; end
     //3'b010: begin column_value <= 4'b1011; leds_value <= ~instruction[15:8]; end
+    3'b000: begin column_value <= 4'b0111; leds_value <= ~accum[7:0]; end
     3'b010: begin column_value <= 4'b1011; leds_value <= ~accum[15:8]; end
-    //3'b010: begin column_value <= 4'b1011; leds_value <= ~ea; end
-    //3'b010: begin column_value <= 4'b1011; leds_value <= ~temp; end
-    //3'b010: begin column_value <= 4'b1011; leds_value <= ~cr; end
     3'b100: begin column_value <= 4'b1101; leds_value <= ~pc[7:0]; end
     3'b110: begin column_value <= 4'b1110; leds_value <= ~state; end
     default: begin column_value <= 4'b1111; leds_value <= 8'hff; end
@@ -259,12 +254,11 @@ always @(posedge clk) begin
             // If button is not pushed, start rom.v code otherwise use EEPROM.
             if (button_program_select) begin
               pc <= 16'h2000;
+              state <= STATE_FETCH_OP_0;
             end else begin
               pc <= 16'h6000;
+              state <= STATE_EEPROM_START;
             end
-
-            //state <= STATE_EEPROM_START;
-            state <= STATE_FETCH_OP_0;
           end else begin
             delay_loop <= delay_loop - 1;
           end
@@ -945,9 +939,8 @@ always @(posedge clk) begin
         begin
           // Set the next EEPROM address to read from and strobe.
           eeprom_address <= eeprom_count;
-          //mem_bus_enable <= 1;
-          //mem_address <= eeprom_count;
           eeprom_strobe <= 1;
+          eeprom_count <= eeprom_count + 1;
           state <= STATE_EEPROM_WAIT;
         end
       STATE_EEPROM_WAIT:
@@ -957,17 +950,16 @@ always @(posedge clk) begin
 
           if (eeprom_ready) begin
             mem_bus_enable <= 0;
-            eeprom_count <= eeprom_count + 1;
 
-            if (eeprom_count[1] == 1) begin
-              // After reading an odd byte, store the 16 bit value to RAM.
-              mem_write <= { eeprom_data_out, eeprom_lsb };
-              state <= STATE_EEPROM_WRITE;
-            end else begin
+            if (eeprom_address[0] == 0) begin
               // After reading in an even byte, save to eeprom_lsb and
               // read the upper byte.
               eeprom_lsb <= eeprom_data_out;
               state <= STATE_EEPROM_READ;
+            end else begin
+              // After reading an odd byte, store the 16 bit value to RAM.
+              mem_write <= { eeprom_data_out, eeprom_lsb };
+              state <= STATE_EEPROM_WRITE;
             end
           end
         end

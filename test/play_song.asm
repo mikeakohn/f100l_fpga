@@ -1,6 +1,9 @@
 .f100_l
 
-.org 0x2000
+;; Setup to be installed in the EEPROM and run from location 0x6000
+;; instead of 0x2000.
+.org 0x6000
+.high_address 0x6000 + 1023
 
 start:
   ;; Setup stack (lsp) to point to start at 0x100.
