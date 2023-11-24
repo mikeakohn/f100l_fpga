@@ -258,9 +258,9 @@ always @(posedge clk) begin
 
             // If button is not pushed, start rom.v code otherwise use EEPROM.
             if (button_program_select) begin
-              pc <= 16'h4000;
+              pc <= 16'h2000;
             end else begin
-              pc <= 0;
+              pc <= 16'h6000;
             end
 
             //state <= STATE_EEPROM_START;
