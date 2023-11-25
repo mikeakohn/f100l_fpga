@@ -50,10 +50,7 @@ assign ioport_3 = ioport_b[2];
 wire [7:0] spi_rx_buffer;
 reg  [7:0] spi_tx_buffer;
 wire spi_busy;
-//wire strobe;
-wire spi_start;
-
-assign spi_start = write_enable && address == 5'h3 && data_in[0] == 1;
+reg spi_start;
 
 always @(button_0) begin
   buttons = { 7'b0, ~button_0 };
@@ -83,7 +80,7 @@ always @(posedge clk) begin
   if (write_enable) begin
     case (address[5:0])
       5'h1: spi_tx_buffer <= data_in;
-      //5'h3: if (data_in[1] == 1) strobe <= 1;
+      5'h3: if (data_in[1] == 1) spi_start <= 1;
       5'h8: ioport_a <= data_in;
       5'h9:
         begin
@@ -131,6 +128,8 @@ always @(posedge clk) begin
       5'ha: ioport_b <= data_in;
     endcase
   end else begin
+    spi_start <= 0;
+
     case (address[5:0])
       5'h0: data_out <= buttons;
       5'h3: data_out <= { 7'b0000000, spi_busy };
