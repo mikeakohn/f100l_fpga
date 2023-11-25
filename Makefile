@@ -62,6 +62,10 @@ play_song:
 	naken_asm -l -type bin -o play_song.bin test/play_song.asm
 	#python3 tools/lst2verilog.py play_song.lst > src/rom.v
 
+lcd:
+	naken_asm -l -type bin -o lcd.bin test/lcd.asm
+	python3 tools/lst2verilog.py lcd.lst > src/rom.v
+
 clean:
 	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst *.bin
 	@echo "Clean!"
