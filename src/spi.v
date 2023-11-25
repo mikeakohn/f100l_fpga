@@ -9,15 +9,14 @@
 
 module spi
 (
-  input raw_clk,
-  input chip_select,
-  input start,
-  input [7:0] data_in,
+  input  raw_clk,
+  input  start,
+  input  [7:0] data_in,
   output [7:0] data_out,
   output busy,
-  output sclk,
-  output mosi,
-  input simo
+  output reg sclk,
+  output reg mosi,
+  input  miso
 );
 
 reg is_running = 0;
@@ -29,6 +28,12 @@ reg [1:0] state = 0;
 reg [7:0] rx_buffer;
 reg [7:0] tx_buffer;
 reg [3:0] count;
+
+//reg sclk_pin = 0;
+//reg mosi_pin = 0;
+//reg miso_pin = 0;
+
+//assign miso = miso_pin;
 
 assign data_out = rx_buffer;
 assign busy = is_running;
@@ -46,6 +51,7 @@ always @(posedge clk) begin
     STATE_IDLE:
       begin
         if (start) begin
+          tx_buffer <= data_in;
           is_running <= 1;
           state <= STATE_CLOCK_OUT;
           count <= 0;
@@ -64,7 +70,7 @@ always @(posedge clk) begin
     STATE_CLOCK_IN:
       begin
         sclk <= 0;
-        rx_buffer <= { rx_buffer[6:0], somi };
+        rx_buffer <= { rx_buffer[6:0], miso };
 
         if (count[3:0]) begin
           state <= STATE_IDLE;

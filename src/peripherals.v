@@ -18,8 +18,14 @@ module peripherals
   output speaker_p,
   output speaker_m,
   output ioport_0,
+  output ioport_1,
+  output ioport_2,
+  output ioport_3,
   input button_0,
-  input reset
+  input reset,
+  output spi_clk,
+  output spi_mosi,
+  output spi_miso
 );
 
 reg [7:0] storage [3:0];
@@ -34,8 +40,20 @@ reg speaker_value_m;
 assign speaker_p = speaker_value_p;
 assign speaker_m = speaker_value_m;
 
-reg [7:0] ioport = 0;
-assign ioport_0 = ioport[0];
+reg [7:0] ioport_a = 0;
+assign ioport_0 = ioport_a[0];
+reg [7:0] ioport_b = 0;
+assign ioport_1 = ioport_b[0];
+assign ioport_2 = ioport_b[1];
+assign ioport_3 = ioport_b[2];
+
+wire [7:0] spi_rx_buffer;
+reg  [7:0] spi_tx_buffer;
+wire spi_busy;
+//wire strobe;
+wire spi_start;
+
+assign spi_start = write_enable && address == 5'h3 && data_in[0] == 1;
 
 always @(button_0) begin
   buttons = { 7'b0, ~button_0 };
@@ -64,8 +82,10 @@ always @(posedge clk) begin
 
   if (write_enable) begin
     case (address[5:0])
-      8: ioport <= data_in;
-      9:
+      5'h1: spi_tx_buffer <= data_in;
+      //5'h3: if (data_in[1] == 1) strobe <= 1;
+      5'h8: ioport_a <= data_in;
+      5'h9:
         begin
           case (data_in[7:0])
             60: speaker_value_high <= 45866; // C4  261.63
@@ -108,13 +128,30 @@ always @(posedge clk) begin
             default: speaker_value_high <= 0;
           endcase
         end
+      5'ha: ioport_b <= data_in;
     endcase
   end else begin
     case (address[5:0])
-      0: data_out <= buttons;
+      5'h0: data_out <= buttons;
+      5'h3: data_out <= { 7'b0000000, spi_busy };
+      5'h8: data_out <= ioport_a;
+      5'ha: data_out <= ioport_b;
+      default: data_out <= 0;
     endcase
   end
 end
+
+spi spi_0
+(
+  .raw_clk  (raw_clk),
+  .start    (spi_start),
+  .data_in  (spi_tx_buffer),
+  .data_out (spi_rx_buffer),
+  .busy     (spi_busy),
+  .sclk     (spi_clk),
+  .mosi     (spi_mosi),
+  .miso     (spi_miso)
+);
 
 endmodule
 

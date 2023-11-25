@@ -22,12 +22,17 @@ module memory_bus
   input write_enable,
   input clk,
   input raw_clk,
-  //input double_clk,
   output speaker_p,
   output speaker_m,
   output ioport_0,
-  input button_0,
-  input reset
+  output ioport_1,
+  output ioport_2,
+  output ioport_3,
+  input  button_0,
+  input  reset,
+  output spi_clk,
+  output spi_mosi,
+  input  spi_miso
 );
 
 wire [15:0] rom_data_out;
@@ -118,8 +123,14 @@ peripherals peripherals_0(
   .speaker_p    (speaker_p),
   .speaker_m    (speaker_m),
   .ioport_0     (ioport_0),
+  .ioport_1     (ioport_1),
+  .ioport_2     (ioport_2),
+  .ioport_3     (ioport_3),
   .button_0     (button_0),
-  .reset        (reset)
+  .reset        (reset),
+  .spi_clk      (spi_clk),
+  .spi_mosi     (spi_mosi),
+  .spi_miso     (spi_miso),
 );
 
 ram ram_1(

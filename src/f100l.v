@@ -19,10 +19,16 @@ module f100l
   output speaker_p,
   output speaker_m,
   output ioport_0,
+  output ioport_1,
+  output ioport_2,
+  output ioport_3,
   input  button_reset,
   input  button_halt,
   input  button_program_select,
-  input  button_0
+  input  button_0,
+  output spi_clk,
+  output spi_mosi,
+  input  spi_miso
 );
 
 // iceFUN 8x4 LEDs used for debugging.
@@ -1023,20 +1029,22 @@ end
 memory_bus memory_bus_0(
   .address      (mem_address),
   .data_in      (mem_write),
-  //.write_mask   (mem_write_mask),
   .data_out     (mem_read),
-  //.data_ready   (mem_data_ready),
   .bus_enable   (mem_bus_enable),
   .write_enable (mem_write_enable),
   .clk          (clk),
   .raw_clk      (raw_clk),
-   //.double_clk  (clock_div[1]),
   .speaker_p    (speaker_p),
   .speaker_m    (speaker_m),
   .ioport_0     (ioport_0),
+  .ioport_1     (ioport_1),
+  .ioport_2     (ioport_2),
+  .ioport_3     (ioport_3),
   .button_0     (button_0),
-  .reset        (~button_reset)
-  //.debug        (debug_1)
+  .reset        (~button_reset),
+  .spi_clk      (spi_clk),
+  .spi_mosi     (spi_mosi),
+  .spi_miso     (spi_miso)
 );
 
 eeprom eeprom_0
