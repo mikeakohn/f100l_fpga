@@ -385,7 +385,7 @@ always @(posedge clk) begin
       STATE_BIT_OP_READ_W_3:
         begin
           mem_bus_enable <= 0;
-          data <= mem_read;
+          temp <= mem_read;
           state <= STATE_BIT_OP_EXECUTE;
         end
       STATE_BIT_OP_EXECUTE:
@@ -528,7 +528,7 @@ always @(posedge clk) begin
                     end
                   2'b11:
                     begin
-                      temp <= data[bits] <= ~j_mode[0];
+                      temp[bits] <= ~j_mode[0];
                       state <= STATE_BIT_OP_WRITE_BACK;
                     end
                   default:
