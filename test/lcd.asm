@@ -3,11 +3,12 @@
 .org 0x2000
 
 ;; Registers.
-SPI_TX     equ 0x6001
-SPI_RX     equ 0x6002
-SPI_CTL    equ 0x6003
-PORT0      equ 0x6008
-SPI_IO     equ 0x600a
+SPI_TX     equ 0x4001
+SPI_RX     equ 0x4002
+SPI_CTL    equ 0x4003
+PORT0      equ 0x4008
+SOUND      equ 0x4009
+SPI_IO     equ 0x400a
 
 ;; Bits in SPI_CTL.
 SPI_BUSY   equ 0
@@ -51,14 +52,17 @@ start:
   ;; Setup stack (lsp) to point to start at 0x100.
   lda #0xff
   sto 0
+  ;; Clear LED.
   lda #0
   sto PORT0
   cal lcd_init
+
 main:
   cal lcd_clear
 while_1:
   cal delay
   cal toggle_led
+
   jmp while_1
 
 lcd_init:
@@ -162,6 +166,6 @@ toggle_led:
   lda 3
   neq #1
   sto 3
-  sto 0x4008
+  sto PORT0
   rtn
 
