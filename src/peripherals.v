@@ -9,23 +9,24 @@
 
 module peripherals
 (
+  input enable,
   input [5:0] address,
   input [15:0] data_in,
   output reg [15:0] data_out,
-  input write_enable,
-  input clk,
-  input raw_clk,
+  input  write_enable,
+  input  clk,
+  input  raw_clk,
   output speaker_p,
   output speaker_m,
   output ioport_0,
   output ioport_1,
   output ioport_2,
   output ioport_3,
-  input button_0,
-  input reset,
+  input  button_0,
+  input  reset,
   output spi_clk,
   output spi_mosi,
-  output spi_miso
+  input  spi_miso
 );
 
 reg [7:0] storage [3:0];
@@ -42,7 +43,7 @@ assign speaker_m = speaker_value_m;
 
 reg [7:0] ioport_a = 0;
 assign ioport_0 = ioport_a[0];
-reg [7:0] ioport_b = 0;
+reg [7:0] ioport_b = 0; // 8'hf0;
 assign ioport_1 = ioport_b[0];
 assign ioport_2 = ioport_b[1];
 assign ioport_3 = ioport_b[2];
@@ -130,13 +131,15 @@ always @(posedge clk) begin
   end else begin
     spi_start <= 0;
 
-    case (address[5:0])
-      5'h0: data_out <= buttons;
-      5'h3: data_out <= { 7'b0000000, spi_busy };
-      5'h8: data_out <= ioport_a;
-      5'ha: data_out <= ioport_b;
-      default: data_out <= 0;
-    endcase
+    if (enable) begin
+      case (address[5:0])
+        5'h0: data_out <= buttons;
+        5'h3: data_out <= { 7'b0000000, spi_busy };
+        5'h8: data_out <= ioport_a;
+        5'ha: data_out <= ioport_b;
+        default: data_out <= address;
+      endcase
+    end
   end
 end
 
@@ -144,8 +147,8 @@ spi spi_0
 (
   .raw_clk  (raw_clk),
   .start    (spi_start),
-  .data_in  (spi_tx_buffer),
-  .data_out (spi_rx_buffer),
+  .data_tx  (spi_tx_buffer),
+  .data_rx  (spi_rx_buffer),
   .busy     (spi_busy),
   .sclk     (spi_clk),
   .mosi     (spi_mosi),
