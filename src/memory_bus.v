@@ -56,9 +56,6 @@ assign block_ram_write_enable = (address[14:13] == 2'b11) && write_enable;
 wire peripherals_enable;
 assign peripherals_enable = address[14:13] == 2'b10;
 
-wire block_ram_chip_enable;
-assign block_ram_chip_enable = bus_enable & address[14] & address[13];
-
 // Based on the selected bank of memory (address[14:13]) select if
 // memory should read from ram.v, rom.v, peripherals.v.
 assign data_out = address[14] == 0 ?
@@ -68,12 +65,6 @@ assign data_out = address[14] == 0 ?
 assign ram_data_in = data_in;
 assign peripherals_data_in = data_in;
 assign block_ram_data_in = data_in;
-
-/*
-assign data_in = address[14] == 0 ?
-  (address[13] == 0 ? ram_data_in         : rom_data_in) :
-  (address[13] == 0 ? peripherals_data_in : block_ram_data_in);
-*/
 
 // Based on the selected bank of memory, decided which module the
 // memory write should be sent to.
@@ -161,18 +152,6 @@ ram ram_1(
   .write_enable (block_ram_write_enable),
   .clk          (raw_clk),
 );
-
-/*
-block_ram block_ram_0(
-  .address      (address[13:0]),
-  .data_in      (block_ram_data_in),
-  .data_out     (block_ram_data_out),
-  .chip_enable  (block_ram_chip_enable),
-  .write_enable (block_ram_write_enable),
-  .clk          (clk),
-  .double_clk   (double_clk)
-);
-*/
 
 endmodule
 
