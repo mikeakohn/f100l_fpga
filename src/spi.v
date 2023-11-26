@@ -11,8 +11,8 @@ module spi
 (
   input  raw_clk,
   input  start,
-  input  [7:0] data_in,
-  output [7:0] data_out,
+  input  [7:0] data_tx,
+  output [7:0] data_rx,
   output busy,
   output reg sclk,
   output reg mosi,
@@ -20,9 +20,9 @@ module spi
 );
 
 reg is_running = 0;
-reg [3:0] clock_div;
-wire clk;
-assign clk = clock_div[3];
+//reg [3:0] clock_div;
+//wire clk;
+//assign clk = clock_div[3];
 
 reg [1:0] state = 0;
 reg [7:0] rx_buffer;
@@ -35,23 +35,23 @@ reg [3:0] count;
 
 //assign miso = miso_pin;
 
-assign data_out = rx_buffer;
+assign data_rx = rx_buffer;
 assign busy = is_running;
 
-always @(posedge raw_clk) begin
-  clock_div <= clock_div + 1;
-end
+//always @(posedge raw_clk) begin
+//  clock_div <= clock_div + 1;
+//end
 
 parameter STATE_IDLE = 0;
 parameter STATE_CLOCK_OUT = 1;
 parameter STATE_CLOCK_IN = 2;
 
-always @(posedge clk) begin
+always @(posedge raw_clk) begin
   case (state)
     STATE_IDLE:
       begin
         if (start) begin
-          tx_buffer <= data_in;
+          tx_buffer <= data_tx;
           is_running <= 1;
           state <= STATE_CLOCK_OUT;
           count <= 0;
@@ -72,7 +72,7 @@ always @(posedge clk) begin
         sclk <= 0;
         rx_buffer <= { rx_buffer[6:0], miso };
 
-        if (count[3:0]) begin
+        if (count[3]) begin
           state <= STATE_IDLE;
           mosi <= 0;
         end else begin
