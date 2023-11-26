@@ -75,7 +75,16 @@ always @(posedge raw_clk) begin
   end
 end
 
-always @(posedge clk) begin
+// FIXME: Fix this...
+// This should be able to be clk instead of raw_clk, but it seems that
+// two consecutive writes this module keeps stale data in data_in. So
+// lda #6
+// sto 0x4008
+// lda #128
+// sto 0x400a
+// will put 6 into both 0x4008 and 0x400a
+// Wiring to RAM in between keeps data_in with the correct result.
+always @(posedge raw_clk) begin
   if (reset) speaker_value_high <= 0;
 
   if (write_enable) begin
