@@ -40,13 +40,17 @@ wire [15:0] ram_data_out;
 wire [15:0] peripherals_data_out;
 wire [15:0] block_ram_data_out;
 
-reg [15:0] ram_data_in;
-reg [15:0] peripherals_data_in;
-reg [15:0] block_ram_data_in;
+wire [15:0] ram_data_in;
+wire [15:0] peripherals_data_in;
+wire [15:0] block_ram_data_in;
 
-reg ram_write_enable;
-reg peripherals_write_enable;
-reg block_ram_write_enable;
+wire ram_write_enable;
+wire peripherals_write_enable;
+wire block_ram_write_enable;
+
+assign ram_write_enable = (address[14:13] == 2'b00) && write_enable;
+assign peripherals_write_enable = (address[14:13] == 2'b10) && write_enable;
+assign block_ram_write_enable = (address[14:13] == 2'b11) && write_enable;
 
 // FIXME: The RAM probably need an enable also.
 wire peripherals_enable;
@@ -61,8 +65,19 @@ assign data_out = address[14] == 0 ?
   (address[13] == 0 ? ram_data_out         : rom_data_out) :
   (address[13] == 0 ? peripherals_data_out : block_ram_data_out);
 
+assign ram_data_in = data_in;
+assign peripherals_data_in = data_in;
+assign block_ram_data_in = data_in;
+
+/*
+assign data_in = address[14] == 0 ?
+  (address[13] == 0 ? ram_data_in         : rom_data_in) :
+  (address[13] == 0 ? peripherals_data_in : block_ram_data_in);
+*/
+
 // Based on the selected bank of memory, decided which module the
 // memory write should be sent to.
+/*
 always @(posedge clk) begin
   if (write_enable) begin
     case (address[14:13])
@@ -103,6 +118,7 @@ always @(posedge clk) begin
     block_ram_write_enable <= 0;
   end
 end
+*/
 
 rom rom_0(
   .address   (address[9:0]),

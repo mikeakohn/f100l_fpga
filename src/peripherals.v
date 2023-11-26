@@ -137,7 +137,7 @@ always @(posedge clk) begin
         5'h3: data_out <= { 7'b0000000, spi_busy };
         5'h8: data_out <= ioport_a;
         5'ha: data_out <= ioport_b;
-        default: data_out <= address;
+        default: data_out <= 0;
       endcase
     end
   end
