@@ -40,9 +40,11 @@ wire [15:0] ram_data_out;
 wire [15:0] peripherals_data_out;
 wire [15:0] block_ram_data_out;
 
-wire [15:0] ram_data_in;
+/*
+wire [15:0] ram_0_data_in;
 wire [15:0] peripherals_data_in;
-wire [15:0] block_ram_data_in;
+wire [15:0] ram_1_data_in;
+*/
 
 wire ram_write_enable;
 wire peripherals_write_enable;
@@ -62,9 +64,11 @@ assign data_out = address[14] == 0 ?
   (address[13] == 0 ? ram_data_out         : rom_data_out) :
   (address[13] == 0 ? peripherals_data_out : block_ram_data_out);
 
-assign ram_data_in = data_in;
+/*
+assign ram_0_data_in = data_in;
 assign peripherals_data_in = data_in;
-assign block_ram_data_in = data_in;
+assign ram_1_data_in = data_in;
+*/
 
 // Based on the selected bank of memory, decided which module the
 // memory write should be sent to.
@@ -74,7 +78,7 @@ always @(posedge clk) begin
     case (address[14:13])
       2'b00:
         begin
-          ram_data_in <= data_in;
+          ram_0_data_in <= data_in;
 
           ram_write_enable <= 1;
           peripherals_write_enable <= 0;
@@ -96,7 +100,7 @@ always @(posedge clk) begin
         end
       2'b11:
         begin
-          block_ram_data_in <= data_in;
+          ram_1_data_in <= data_in;
 
           ram_write_enable <= 0;
           peripherals_write_enable <= 0;
@@ -118,7 +122,8 @@ rom rom_0(
 
 ram ram_0(
   .address      (address[9:0]),
-  .data_in      (ram_data_in),
+  //.data_in      (ram_0_data_in),
+  .data_in      (data_in),
   .data_out     (ram_data_out),
   .write_enable (ram_write_enable),
   .clk          (raw_clk),
@@ -127,7 +132,8 @@ ram ram_0(
 peripherals peripherals_0(
   .enable       (peripherals_enable),
   .address      (address[5:0]),
-  .data_in      (peripherals_data_in),
+  //.data_in      (peripherals_data_in),
+  .data_in      (data_in),
   .data_out     (peripherals_data_out),
   .write_enable (peripherals_write_enable),
   .clk          (clk),
@@ -147,7 +153,8 @@ peripherals peripherals_0(
 
 ram ram_1(
   .address      (address[9:0]),
-  .data_in      (block_ram_data_in),
+  //.data_in      (ram_1_data_in),
+  .data_in      (data_in),
   .data_out     (block_ram_data_out),
   .write_enable (block_ram_write_enable),
   .clk          (raw_clk),
