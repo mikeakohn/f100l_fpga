@@ -48,11 +48,15 @@ reg ram_write_enable;
 reg peripherals_write_enable;
 reg block_ram_write_enable;
 
+// FIXME: The RAM probably need an enable also.
+wire peripherals_enable;
+assign peripherals_enable = address[14:13] == 2'b10;
+
 wire block_ram_chip_enable;
 assign block_ram_chip_enable = bus_enable & address[14] & address[13];
 
 // Based on the selected bank of memory (address[14:13]) select if
-// memory should read from ram.v, rom.v, peripherals.v or hardcoded 0.
+// memory should read from ram.v, rom.v, peripherals.v.
 assign data_out = address[14] == 0 ?
   (address[13] == 0 ? ram_data_out         : rom_data_out) :
   (address[13] == 0 ? peripherals_data_out : block_ram_data_out);
@@ -114,6 +118,7 @@ ram ram_0(
 );
 
 peripherals peripherals_0(
+  .enable       (peripherals_enable),
   .address      (address[5:0]),
   .data_in      (peripherals_data_in),
   .data_out     (peripherals_data_out),
