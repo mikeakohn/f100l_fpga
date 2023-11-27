@@ -9,6 +9,9 @@ SPI_CTL    equ 0x4003
 PORT0      equ 0x4008
 SOUND      equ 0x4009
 SPI_IO     equ 0x400a
+;SPI_IO_0     equ 0x400b
+;SPI_IO_1     equ 0x400c
+;SPI_IO_2     equ 0x400d
 
 ;; Bits in SPI_CTL.
 SPI_BUSY   equ 0
@@ -55,9 +58,9 @@ start:
   ;; Clear LED.
   lda #0
   sto PORT0
-  cal lcd_init
 
 main:
+  cal lcd_init
   cal lcd_clear
 while_1:
   cal delay
@@ -113,7 +116,7 @@ lcd_clear:
   lda #0x10000 - (96 * 32)
   sto 2
 lcd_clear_loop:
-  lda #15
+  lda #0xff
   cal lcd_send_data
   lda #0
   cal lcd_send_data
@@ -127,13 +130,15 @@ lcd_send_cmd:
   clr #LCD_CS, SPI_IO
 
   sto SPI_TX
+  ;; FIXME: Remove.
+  lda #0
+  sto 0x6000
   set #SPI_START, SPI_CTL
   clrm
 lcd_send_cmd_wait:
   lda SPI_CTL
   cmp #1
   jnz lcd_send_cmd_wait
-
   set #LCD_CS, SPI_IO
   rtn
 
@@ -144,6 +149,8 @@ lcd_send_data:
   clr #LCD_CS, SPI_IO
 
   sto SPI_TX
+  ;; FIXME: Remove.
+  sto 0x6000
   set #SPI_START, SPI_CTL
   clrm
 lcd_send_data_wait:
