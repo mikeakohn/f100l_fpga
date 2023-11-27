@@ -136,6 +136,9 @@ always @(posedge raw_clk) begin
           endcase
         end
       5'ha: ioport_b <= data_in;
+      //5'hb: ioport_b[0] <= data_in[0];
+      //5'hc: ioport_b[1] <= data_in[1];
+      //5'hd: ioport_b[2] <= data_in[2];
     endcase
   end else begin
     spi_start <= 0;
@@ -143,9 +146,14 @@ always @(posedge raw_clk) begin
     if (enable) begin
       case (address[5:0])
         5'h0: data_out <= buttons;
+        5'h1: data_out <= spi_tx_buffer;
+        5'h2: data_out <= spi_rx_buffer;
         5'h3: data_out <= { 7'b0000000, spi_busy };
         5'h8: data_out <= ioport_a;
         5'ha: data_out <= ioport_b;
+        //5'hb: data_out <= { 7'b0000000, ioport_b[0] };
+        //5'hc: data_out <= { 6'b000000, ioport_b[1], 1'b0 };
+        //5'hd: data_out <= { 5'b00000, ioport_b[2], 2'b00 };
         default: data_out <= 0;
       endcase
     end
