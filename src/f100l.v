@@ -709,7 +709,10 @@ always @(posedge clk) begin
                 if (flag_m == 0) temp <= data - accum;
                 else             temp <= data - accum + flag_c - 1;
                 dest <= DEST_NONE;
-                cr[CR_M] <= 1;
+                // FIXME: Some website says CMP sets M to 1 every time,
+                // but the PDF for the chip doesn't. And this seems odd to
+                // me, so I'm commenting it out.
+                //cr[CR_M] <= 1;
               end
             OP_ICZ:
               begin
