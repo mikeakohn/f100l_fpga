@@ -47,6 +47,8 @@ wire [15:0] mem_read;
 reg mem_bus_enable = 0;
 reg mem_write_enable = 0;
 
+wire [7:0] mem_debug;
+
 // Clock.
 reg [21:0] count = 0;
 reg [5:0]  state = 0;
@@ -142,6 +144,7 @@ always @(posedge raw_clk) begin
     //3'b010: begin column_value <= 4'b1011; leds_value <= ~instruction[15:8]; end
     3'b000: begin column_value <= 4'b0111; leds_value <= ~accum[7:0]; end
     3'b010: begin column_value <= 4'b1011; leds_value <= ~accum[15:8]; end
+    //3'b010: begin column_value <= 4'b1011; leds_value <= ~mem_debug[7:0]; end
     3'b100: begin column_value <= 4'b1101; leds_value <= ~pc[7:0]; end
     3'b110: begin column_value <= 4'b1110; leds_value <= ~state; end
     default: begin column_value <= 4'b1111; leds_value <= 8'hff; end
@@ -1033,6 +1036,7 @@ memory_bus memory_bus_0(
   .address      (mem_address),
   .data_in      (mem_write),
   .data_out     (mem_read),
+  .debug        (mem_debug),
   .bus_enable   (mem_bus_enable),
   .write_enable (mem_write_enable),
   .clk          (clk),

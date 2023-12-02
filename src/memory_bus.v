@@ -18,6 +18,7 @@ module memory_bus
   input  [15:0] address,
   input  [15:0] data_in,
   output [15:0] data_out,
+  output [7:0] debug,
   input bus_enable,
   input write_enable,
   input clk,
@@ -56,7 +57,7 @@ assign block_ram_write_enable = (address[14:13] == 2'b11) && write_enable;
 
 // FIXME: The RAM probably need an enable also.
 wire peripherals_enable;
-assign peripherals_enable = address[14:13] == 2'b10;
+assign peripherals_enable = (address[14:13] == 2'b10) && bus_enable;
 
 // Based on the selected bank of memory (address[14:13]) select if
 // memory should read from ram.v, rom.v, peripherals.v.
@@ -135,6 +136,7 @@ peripherals peripherals_0(
   //.data_in      (peripherals_data_in),
   .data_in      (data_in),
   .data_out     (peripherals_data_out),
+  .debug        (debug),
   .write_enable (peripherals_write_enable),
   .clk          (clk),
   .raw_clk      (raw_clk),

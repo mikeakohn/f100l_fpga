@@ -13,6 +13,7 @@ module peripherals
   input [5:0] address,
   input [15:0] data_in,
   output reg [15:0] data_out,
+  output [7:0] debug,
   input  write_enable,
   input  clk,
   input  raw_clk,
@@ -47,6 +48,9 @@ reg [7:0] ioport_b = 0; // 8'hf0;
 assign ioport_1 = ioport_b[0];
 assign ioport_2 = ioport_b[1];
 assign ioport_3 = ioport_b[2];
+
+//assign debug = ioport_b;
+assign debug = spi_tx_buffer;
 
 wire [7:0] spi_rx_buffer;
 reg  [7:0] spi_tx_buffer;
@@ -85,6 +89,7 @@ end
 // will put 6 into both 0x4008 and 0x400a
 // Wiring to RAM in between keeps data_in with the correct result.
 always @(posedge raw_clk) begin
+//always @(posedge enable) begin
   if (reset) speaker_value_high <= 0;
 
   if (write_enable) begin
@@ -141,7 +146,7 @@ always @(posedge raw_clk) begin
       //5'hd: ioport_b[2] <= data_in[2];
     endcase
   end else begin
-    spi_start <= 0;
+    if (spi_start && spi_busy) spi_start <= 0;
 
     if (enable) begin
       case (address[5:0])
@@ -162,7 +167,7 @@ end
 
 spi spi_0
 (
-  .raw_clk  (raw_clk),
+  .raw_clk  (clk),
   .start    (spi_start),
   .data_tx  (spi_tx_buffer),
   .data_rx  (spi_rx_buffer),
