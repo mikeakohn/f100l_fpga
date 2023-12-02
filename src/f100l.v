@@ -388,7 +388,9 @@ always @(posedge clk) begin
       STATE_BIT_OP_READ_W_3:
         begin
           mem_bus_enable <= 0;
+          // FIXME: Only one of these need to be set.
           temp <= mem_read;
+          data <= mem_read;
           state <= STATE_BIT_OP_EXECUTE;
         end
       STATE_BIT_OP_EXECUTE:
