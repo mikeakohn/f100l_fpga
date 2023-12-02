@@ -7,6 +7,9 @@
 //
 // Copyright 2023 by Michael Kohn
 
+// This is using 3 clocks per bit. I believe this should need 2 (or
+// if using the negedge just 1) but for now this is using 3.
+
 module spi
 (
   input  raw_clk,
@@ -42,9 +45,10 @@ assign busy = is_running;
 //  clock_div <= clock_div + 1;
 //end
 
-parameter STATE_IDLE = 0;
+parameter STATE_IDLE      = 0;
 parameter STATE_CLOCK_OUT = 1;
-parameter STATE_CLOCK_IN = 2;
+parameter STATE_CLOCK_OUT_1 = 2;
+parameter STATE_CLOCK_IN  = 3;
 
 always @(posedge raw_clk) begin
   case (state)
@@ -57,14 +61,21 @@ always @(posedge raw_clk) begin
           count <= 0;
         end else begin
           is_running <= 0;
+          mosi <= 0;
         end
       end
     STATE_CLOCK_OUT:
       begin
         tx_buffer <= tx_buffer << 1;
         mosi <= tx_buffer[7];
-        sclk <= 1;
+        //sclk <= 1;
         count <= count + 1;
+        state <= STATE_CLOCK_OUT_1;
+        //state <= STATE_CLOCK_IN;
+      end
+    STATE_CLOCK_OUT_1:
+      begin
+        sclk <= 1;
         state <= STATE_CLOCK_IN;
       end
     STATE_CLOCK_IN:
@@ -74,7 +85,6 @@ always @(posedge raw_clk) begin
 
         if (count[3]) begin
           state <= STATE_IDLE;
-          mosi <= 0;
         end else begin
           state <= STATE_CLOCK_OUT;
         end
