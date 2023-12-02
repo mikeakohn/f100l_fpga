@@ -66,6 +66,10 @@ lcd:
 	naken_asm -l -type bin -o lcd.bin test/lcd.asm
 	python3 tools/lst2verilog.py lcd.lst > src/rom.v
 
+spi:
+	naken_asm -l -type bin -o spi.bin test/spi.asm
+	python3 tools/lst2verilog.py spi.lst > src/rom.v
+
 clean:
 	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst *.bin
 	@echo "Clean!"

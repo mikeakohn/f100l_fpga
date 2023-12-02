@@ -130,15 +130,13 @@ lcd_send_cmd:
   clr #LCD_CS, SPI_IO
 
   sto SPI_TX
-  ;; FIXME: Remove.
-  lda #0
-  sto 0x6000
+
   set #SPI_START, SPI_CTL
-  clrm
 lcd_send_cmd_wait:
   lda SPI_CTL
-  cmp #1
-  jnz lcd_send_cmd_wait
+  cmp #(1 << SPI_BUSY)
+  jz lcd_send_cmd_wait
+
   set #LCD_CS, SPI_IO
   rtn
 
@@ -149,15 +147,12 @@ lcd_send_data:
   clr #LCD_CS, SPI_IO
 
   sto SPI_TX
-  ;; FIXME: Remove.
-  sto 0x6000
+
   set #SPI_START, SPI_CTL
-  clrm
 lcd_send_data_wait:
   lda SPI_CTL
-  cmp #1
-  jnz lcd_send_cmd_wait
-
+  cmp #(1 << SPI_BUSY)
+  jz lcd_send_data_wait
   set #LCD_CS, SPI_IO
   rtn
 
