@@ -167,7 +167,7 @@ end
 
 spi spi_0
 (
-  .raw_clk  (clk),
+  .raw_clk  (raw_clk),
   .start    (spi_start),
   .data_tx  (spi_tx_buffer),
   .data_rx  (spi_rx_buffer),
