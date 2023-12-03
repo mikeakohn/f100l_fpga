@@ -62,6 +62,8 @@ start:
 main:
   cal lcd_init
   cal lcd_clear
+  cal lcd_clear_2
+  cal mandelbrot
 while_1:
   cal delay
   cal toggle_led
@@ -113,14 +115,188 @@ lcd_init:
   rtn
 
 lcd_clear:
-  lda #0x10000 - (96 * 32)
+  lda #0x10000 - (96 * 64)
   sto 2
 lcd_clear_loop:
   lda #0xff
   cal lcd_send_data
-  lda #0
+  lda #0x0f
   cal lcd_send_data
   icz 2, lcd_clear_loop
+  rtn
+
+lcd_clear_2:
+  lda #0x10000 - (96 * 64)
+  sto 2
+lcd_clear_loop_2:
+  lda #0xf0
+  cal lcd_send_data
+  lda #0x0f
+  cal lcd_send_data
+  icz 2, lcd_clear_loop_2
+  rtn
+
+;; uint32_t multiply(int16_t, int16_t);
+;; Address 6: input 0.
+;; Address 7: input 1.
+;; Address 8: output (LSB).
+;; Address 9: output (MSB).
+;; Address 10: counter.
+;; Address 11: an MSB for input 0 (starts as 0).
+multiply:
+  ; Set output to 0.
+  lda #0
+  sto 8
+  sto 9
+  ; Set temporary LSB to 0.
+  sto 11
+  ; Set counter to 16.
+  lda #0x10000 - 16
+  sto 10
+multiply_repeat:
+  jbc #0, 7, multiply_ignore_bit
+  clrm
+  lda 6
+  ads 8
+  setm
+  lda 11
+  ads 9
+multiply_ignore_bit:
+  srl #1, 7
+  clrm
+  lda 6
+  ads 6
+  setm
+  lda 11
+  ads 11
+  icz 10, multiply_repeat
+  rtn
+
+;; Address 8: output (LSB).
+;; Address 9: output (MSB).
+shift_right_10:
+  srl #10, 8
+  lda 9
+  srl #10, 9
+  and #0x3ff
+  sll #6, A
+  ads 8
+  rtn
+
+curr_x equ 20
+curr_y equ 21
+curr_r equ 22
+curr_i equ 23
+color  equ 24
+zr     equ 25
+zi     equ 26
+zr2    equ 27
+zi2    equ 28
+tr     equ 29
+
+mandelbrot:
+  ;; final int DEC_PLACE = 10;
+  ;; final int r0 = (-2 << DEC_PLACE);
+  ;; final int i0 = (-1 << DEC_PLACE);
+  ;; final int r1 = (1 << DEC_PLACE);
+  ;; final int i1 = (1 << DEC_PLACE);
+  ;; final int dx = (r1 - r0) / 96; (0x0020)
+  ;; final int dy = (i1 - i0) / 64; (0x0020)
+
+  ;; for (y = 0; y < 64; y++)
+  lda #0x10000 - 64
+  sto curr_y
+  ;; int i = -1 << 10;
+  lda #0xfc00
+  sto curr_i
+mandelbrot_for_y:
+  ;; for (x = 0; y < 96; x++)
+  lda #0x10000 - 96
+  sto curr_x
+  ;; int r = -2 << 10;
+  lda #0xf800
+  sto curr_r
+mandelbrot_for_x:
+  ;; zr = r;
+  ;; zi = i;
+  lda curr_r
+  sto zr
+  lda curr_i
+  sto zi
+  ;; for (int count = 0; count < 15; count++)
+  lda #0x10000 - 15
+  sto color
+mandelbrot_for_count:
+  ;; zr2 = (zr * zr) >> DEC_PLACE;
+  lda zr
+  sto 6
+  sto 7
+  cal multiply
+  cal shift_right_10
+  lda 8
+  sto zr2
+
+  ;; zi2 = (zi * zi) >> DEC_PLACE;
+  lda zi
+  sto 6
+  sto 7
+  cal multiply
+  cal shift_right_10
+  lda 8
+  sto zi2
+
+  ;; if (zr2 + zi2 > (4 << DEC_PLACE)) { break; }
+  ;; cmp does: 4 - (zr2 + zi2).. if it's negative it's bigger than 4.
+  lda zr2
+  add zi2
+  cmp #(4 << 10)
+  jn mandelbrot_stop
+
+  ;; tr = zr2 - zi2;
+  lda zi2
+  sub zr2
+  sto tr
+
+  ;; ti = ((zr * zi) >> DEC_PLACE) << 1;
+  lda zr
+  sto 6
+  lda zi
+  sto 7
+  cal multiply
+  cal shift_right_10
+  sll #1, 8
+
+  ;; zr = tr + curr_r;
+  lda tr
+  add curr_r
+  sto zr
+
+  ;; zi = ti + curr_i;
+  lda 8
+  add curr_i
+  sto zi
+
+  icz color, mandelbrot_for_count
+mandelbrot_stop:
+
+  lda color
+  add #15
+  add #colors
+  sto color
+  lda [color]+
+  cal lcd_send_data
+  lda [color]
+  cal lcd_send_data
+
+  ;; r += dx;
+  lda #0x0020
+  ads curr_r
+  icz curr_x, mandelbrot_for_x
+
+  ;; i += dy;
+  lda #0x0020
+  ads curr_i
+  icz curr_y, mandelbrot_for_y
   rtn
 
 ;; lcd_send_cmd(A)
@@ -170,4 +346,22 @@ toggle_led:
   sto 3
   sto PORT0
   rtn
+
+colors:
+  dc16 0x0000
+  dc16 0x000c
+  dc16 0x0013
+  dc16 0x0015
+  dc16 0x0195
+  dc16 0x0335
+  dc16 0x04d5
+  dc16 0x34c0
+  dc16 0x64c0
+  dc16 0x9cc0
+  dc16 0x6320
+  dc16 0xa980
+  dc16 0xaaa0
+  dc16 0xcaa0
+  dc16 0xe980
+  dc16 0xf800
 
