@@ -46,9 +46,26 @@ COMMAND_CONTRASTB       equ 0x82
 COMMAND_CONTRASTC       equ 0x83
 COMMAND_DISPLAY_ON      equ 0xaf
 
-.macro send_command(a)
-  lda #a
+.macro send_command(value)
+  lda #value
   cal lcd_send_cmd
+.endm
+
+.macro square_fixed(var)
+  lda var
+  sto 6
+  sto 7
+  cal multiply
+  cal shift_right_10
+.endm
+
+.macro multiply_fixed(var1, var2)
+  lda var1
+  sto 6
+  lda var2
+  sto 7
+  cal multiply
+  cal shift_right_10
 .endm
 
 start:
@@ -229,20 +246,12 @@ mandelbrot_for_x:
   sto color
 mandelbrot_for_count:
   ;; zr2 = (zr * zr) >> DEC_PLACE;
-  lda zr
-  sto 6
-  sto 7
-  cal multiply
-  cal shift_right_10
+  square_fixed(zr)
   lda 8
   sto zr2
 
   ;; zi2 = (zi * zi) >> DEC_PLACE;
-  lda zi
-  sto 6
-  sto 7
-  cal multiply
-  cal shift_right_10
+  square_fixed(zi)
   lda 8
   sto zi2
 
@@ -259,12 +268,7 @@ mandelbrot_for_count:
   sto tr
 
   ;; ti = ((zr * zi) >> DEC_PLACE) << 1;
-  lda zr
-  sto 6
-  lda zi
-  sto 7
-  cal multiply
-  cal shift_right_10
+  multiply_fixed(zr, zi)
   sll #1, 8
 
   ;; zr = tr + curr_r;
