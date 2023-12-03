@@ -690,13 +690,13 @@ always @(posedge clk) begin
             OP_ADD:
               begin
                 if (flag_m == 0) temp <= data + accum;
-                else        temp <= data + accum + flag_c;
+                else             temp <= data + accum + flag_c;
                 dest <= DEST_A;
               end
             OP_ADS:
               begin
                 if (flag_m == 0) temp <= accum + data;
-                else        temp <= accum + data + flag_c;
+                else             temp <= accum + data + flag_c;
                 dest <= DEST_EA;
               end
             OP_AND:
@@ -742,7 +742,7 @@ always @(posedge clk) begin
             OP_SBS:
               begin
                 if (flag_m == 0) temp <= data - accum;
-                else        temp <= data - accum + flag_c - 1;
+                else             temp <= data - accum + flag_c - 1;
                 dest <= DEST_EA;
               end
             OP_STO:
@@ -753,7 +753,7 @@ always @(posedge clk) begin
             OP_SUB:
               begin
                 if (flag_m == 0) temp <= data - accum;
-                else        temp <= data - accum + flag_c - 1;
+                else             temp <= data - accum + flag_c - 1;
                 dest <= DEST_A;
               end
           endcase
