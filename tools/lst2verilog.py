@@ -45,9 +45,9 @@ for line in fp:
   if in_data:
     if not line.startswith("2"): continue
     data = line.split(":")[1]
-    data = data[:40].strip()
+    data = data[:48].strip()
     tokens = data.split()
-    print("    // data")
+    print("    // data " + str(tokens))
     for i in range(0, len(tokens), 2):
       data = tokens[i + 1] + tokens[i + 0]
       print(indent + str(address - org) + ": data <= 16'h" + data + ";")
