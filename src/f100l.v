@@ -762,7 +762,7 @@ always @(posedge clk) begin
         end
       STATE_WRITE_BACK:
         begin
-          cr[CR_C] <= temp[16];
+          if (alu_op != OP_LDA) cr[CR_C] <= temp[16];
           cr[CR_S] <= temp[15];
           cr[CR_Z] <= temp[15:0] == 0;
 
