@@ -223,6 +223,7 @@ mandelbrot_for_x:
   sto zr
   lda curr_i
   sto zi
+
   ;; for (int count = 0; count < 15; count++)
   lda #0x10000 - 15
   sto color
@@ -247,8 +248,8 @@ mandelbrot_for_count:
 
   ;; if (zr2 + zi2 > (4 << DEC_PLACE)) { break; }
   ;; cmp does: 4 - (zr2 + zi2).. if it's negative it's bigger than 4.
-  lda zr2
-  add zi2
+  lda zi2
+  add zr2
   cmp #(4 << 10)
   jn mandelbrot_stop
 
@@ -283,9 +284,11 @@ mandelbrot_stop:
   add #15
   add #colors
   sto color
-  lda [color]+
+  lda [color]
+  srl #8, A
   cal lcd_send_data
   lda [color]
+  and #0xff
   cal lcd_send_data
 
   ;; r += dx;
