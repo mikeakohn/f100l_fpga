@@ -3,6 +3,7 @@
 .org 0x2000
 
 ;; Registers.
+BUTTON     equ 0x4000
 SPI_TX     equ 0x4001
 SPI_RX     equ 0x4002
 SPI_CTL    equ 0x4003
@@ -24,6 +25,11 @@ LCD_CS     equ 2
 
 ;; Bits in PORT0
 LED0       equ 0
+
+MANDELBROT_R      equ 0x400b
+MANDELBROT_I      equ 0x400c
+MANDELBROT_CTL    equ 0x400d
+MANDELBROT_RESULT equ 0x400e
 
 COMMAND_DISPLAY_OFF     equ 0xae
 COMMAND_SET_REMAP       equ 0xa0
@@ -81,16 +87,27 @@ start:
   ;; Clear LED.
   lda #0
   sto PORT0
+  sto 31
 
 main:
   cal lcd_init
   cal lcd_clear
-  cal lcd_clear_2
-  cal mandelbrot
 while_1:
+  jbs #0, BUTTON, run
   cal delay
   cal toggle_led
+  jmp while_1
 
+run:
+  lda #1
+  ads 31
+  cal lcd_clear_2
+  jbs #0, 31, do_software
+  cal mandelbrot_hw
+  jmp while_1
+
+do_software:
+  cal mandelbrot
   jmp while_1
 
 lcd_init:
@@ -346,6 +363,52 @@ mandelbrot_stop:
   lda #0x0020
   ads curr_i
   icz curr_y, mandelbrot_for_y
+  rtn
+
+mandelbrot_hw:
+  ;; for (y = 0; y < 64; y++)
+  lda #0x10000 - 64
+  sto curr_y
+  ;; int i = -1 << 10;
+  lda #0xfc00
+  sto curr_i
+mandelbrot_hw_for_y:
+  ;; for (x = 0; y < 96; x++)
+  lda #0x10000 - 96
+  sto curr_x
+  ;; int r = -2 << 10;
+  lda #0xf800
+  sto curr_r
+mandelbrot_hw_for_x:
+  ;; zr = r;
+  ;; zi = i;
+  lda curr_r
+  sto MANDELBROT_R
+  lda curr_i
+  sto MANDELBROT_I
+  set #1, MANDELBROT_CTL
+mandelbrot_hw_wait:
+  jbs #0, MANDELBROT_CTL, mandelbrot_hw_wait
+
+  lda MANDELBROT_RESULT
+  add #colors
+  sto color
+  lda [color]
+  srl #8, A
+  cal lcd_send_data
+  lda [color]
+  and #0xff
+  cal lcd_send_data
+
+  ;; r += dx;
+  lda #0x0020
+  ads curr_r
+  icz curr_x, mandelbrot_hw_for_x
+
+  ;; i += dy;
+  lda #0x0020
+  ads curr_i
+  icz curr_y, mandelbrot_hw_for_y
   rtn
 
 ;; lcd_send_cmd(A)

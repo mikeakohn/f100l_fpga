@@ -7,6 +7,7 @@ SOURCE= \
   src/memory_bus.v \
   src/peripherals.v \
   src/ram.v \
+  src/mandelbrot.v \
   src/rom.v \
   src/spi.v
 
