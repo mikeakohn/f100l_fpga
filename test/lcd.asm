@@ -52,11 +52,17 @@ COMMAND_DISPLAY_ON      equ 0xaf
 .endm
 
 .macro square_fixed(var)
+.scope
   lda var
+  jbc #15, A, not_signed
+  neq #0xffff
+  add #1
+not_signed:
   sto 6
   sto 7
   cal multiply
   cal shift_right_10
+.ends
 .endm
 
 .macro multiply_fixed(var1, var2)
@@ -64,7 +70,7 @@ COMMAND_DISPLAY_ON      equ 0xaf
   sto 6
   lda var2
   sto 7
-  cal multiply
+  cal multiply_signed
   cal shift_right_10
 .endm
 
@@ -187,6 +193,42 @@ multiply_ignore_bit:
   lda 11
   ads 11
   icz 10, multiply_repeat
+  rtn
+
+;; This is only 16x16=16.
+multiply_signed:
+  ;; Keep track of sign bits
+  lda 6
+  neq 7
+  sto 5
+  ;; abs(var0).
+  jbc #15, 6, multiply_signed_var0_positive
+  lda 6
+  neq #0xffff
+  add #1
+  sto 6
+multiply_signed_var0_positive:
+  ;; abs(var1).
+  jbc #15, 7, multiply_signed_var1_positive
+  lda 7
+  neq #0xffff
+  add #1
+  sto 7
+multiply_signed_var1_positive:
+  cal multiply
+  jbc #15, 5, multiply_signed_not_neg
+  lda 8
+  neq #0xffff
+  sto 8
+  lda 9
+  neq #0xffff
+  sto 9
+  lda #1
+  ads 8
+  setm
+  lda #0
+  ads 9
+multiply_signed_not_neg:
   rtn
 
 ;; Address 8: output (LSB).
@@ -355,20 +397,20 @@ toggle_led:
   rtn
 
 colors:
-  dc16 0x0000
-  dc16 0x000c
-  dc16 0x0013
-  dc16 0x0015
-  dc16 0x0195
-  dc16 0x0335
-  dc16 0x04d5
-  dc16 0x34c0
-  dc16 0x64c0
-  dc16 0x9cc0
-  dc16 0x6320
-  dc16 0xa980
-  dc16 0xaaa0
-  dc16 0xcaa0
-  dc16 0xe980
   dc16 0xf800
+  dc16 0xe980
+  dc16 0xcaa0
+  dc16 0xaaa0
+  dc16 0xa980
+  dc16 0x6320
+  dc16 0x9cc0
+  dc16 0x64c0
+  dc16 0x34c0
+  dc16 0x04d5
+  dc16 0x0335
+  dc16 0x0195
+  dc16 0x0015
+  dc16 0x0013
+  dc16 0x000c
+  dc16 0x0000
 
