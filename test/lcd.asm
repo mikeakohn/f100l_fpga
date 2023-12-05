@@ -155,25 +155,25 @@ lcd_init:
   rtn
 
 lcd_clear:
+  set #2, SPI_CTL
   lda #0x10000 - (96 * 64)
-  sto 2
+  sto 30
 lcd_clear_loop:
-  lda #0xff
+  lda #0xff0f
   cal lcd_send_data
-  lda #0x0f
-  cal lcd_send_data
-  icz 2, lcd_clear_loop
+  icz 30, lcd_clear_loop
+  clr #2, SPI_CTL
   rtn
 
 lcd_clear_2:
+  set #2, SPI_CTL
   lda #0x10000 - (96 * 64)
-  sto 2
+  sto 30
 lcd_clear_loop_2:
-  lda #0xf0
+  lda #0xf00f
   cal lcd_send_data
-  lda #0x0f
-  cal lcd_send_data
-  icz 2, lcd_clear_loop_2
+  icz 30, lcd_clear_loop_2
+  clr #2, SPI_CTL 
   rtn
 
 ;; uint32_t multiply(int16_t, int16_t);
@@ -279,6 +279,9 @@ mandelbrot:
   ;; final int dx = (r1 - r0) / 96; (0x0020)
   ;; final int dy = (i1 - i0) / 64; (0x0020)
 
+  ;; Set SPI to 16 bit.
+  set #2, SPI_CTL
+
   ;; for (y = 0; y < 64; y++)
   lda #0x10000 - 64
   sto curr_y
@@ -348,10 +351,6 @@ mandelbrot_stop:
   add #colors
   sto color
   lda [color]
-  srl #8, A
-  cal lcd_send_data
-  lda [color]
-  and #0xff
   cal lcd_send_data
 
   ;; r += dx;
@@ -363,9 +362,14 @@ mandelbrot_stop:
   lda #0x0020
   ads curr_i
   icz curr_y, mandelbrot_for_y
+
+  clr #2, SPI_CTL
   rtn
 
 mandelbrot_hw:
+  ;; Set SPI to 16 bit.
+  set #2, SPI_CTL
+
   ;; for (y = 0; y < 64; y++)
   lda #0x10000 - 64
   sto curr_y
@@ -394,10 +398,6 @@ mandelbrot_hw_wait:
   add #colors
   sto color
   lda [color]
-  srl #8, A
-  cal lcd_send_data
-  lda [color]
-  and #0xff
   cal lcd_send_data
 
   ;; r += dx;
@@ -409,6 +409,8 @@ mandelbrot_hw_wait:
   lda #0x0020
   ads curr_i
   icz curr_y, mandelbrot_hw_for_y
+
+  clr #2, SPI_CTL
   rtn
 
 ;; lcd_send_cmd(A)
