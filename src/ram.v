@@ -39,7 +39,7 @@ always @(posedge clk) begin
   if (write_enable) begin
     storage[address] <= data_in;
   end else
-    data_out = storage[address];
+    data_out <= storage[address];
 end
 
 endmodule
