@@ -127,7 +127,7 @@ ram ram_0(
   .data_in      (data_in),
   .data_out     (ram_data_out),
   .write_enable (ram_write_enable),
-  .clk          (raw_clk),
+  .clk          (raw_clk)
 );
 
 peripherals peripherals_0(
@@ -150,7 +150,7 @@ peripherals peripherals_0(
   .reset        (reset),
   .spi_clk      (spi_clk),
   .spi_mosi     (spi_mosi),
-  .spi_miso     (spi_miso),
+  .spi_miso     (spi_miso)
 );
 
 ram ram_1(
@@ -159,7 +159,7 @@ ram ram_1(
   .data_in      (data_in),
   .data_out     (block_ram_data_out),
   .write_enable (block_ram_write_enable),
-  .clk          (raw_clk),
+  .clk          (raw_clk)
 );
 
 endmodule

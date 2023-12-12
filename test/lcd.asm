@@ -17,6 +17,7 @@ SPI_IO     equ 0x400a
 ;; Bits in SPI_CTL.
 SPI_BUSY   equ 0
 SPI_START  equ 1
+SPI_16     equ 2
 
 ;; Bits in SPI_IO.
 LCD_RES    equ 0
@@ -155,25 +156,25 @@ lcd_init:
   rtn
 
 lcd_clear:
-  set #2, SPI_CTL
+  set #SPI_16, SPI_CTL
   lda #0x10000 - (96 * 64)
   sto 30
 lcd_clear_loop:
   lda #0xff0f
   cal lcd_send_data
   icz 30, lcd_clear_loop
-  clr #2, SPI_CTL
+  clr #SPI_16, SPI_CTL
   rtn
 
 lcd_clear_2:
-  set #2, SPI_CTL
+  set #SPI_16, SPI_CTL
   lda #0x10000 - (96 * 64)
   sto 30
 lcd_clear_loop_2:
   lda #0xf00f
   cal lcd_send_data
   icz 30, lcd_clear_loop_2
-  clr #2, SPI_CTL 
+  clr #SPI_16, SPI_CTL
   rtn
 
 ;; uint32_t multiply(int16_t, int16_t);
@@ -280,7 +281,7 @@ mandelbrot:
   ;; final int dy = (i1 - i0) / 64; (0x0020)
 
   ;; Set SPI to 16 bit.
-  set #2, SPI_CTL
+  set #SPI_16, SPI_CTL
 
   ;; for (y = 0; y < 64; y++)
   lda #0x10000 - 64
@@ -289,7 +290,7 @@ mandelbrot:
   lda #0xfc00
   sto curr_i
 mandelbrot_for_y:
-  ;; for (x = 0; y < 96; x++)
+  ;; for (x = 0; x < 96; x++)
   lda #0x10000 - 96
   sto curr_x
   ;; int r = -2 << 10;
@@ -363,12 +364,12 @@ mandelbrot_stop:
   ads curr_i
   icz curr_y, mandelbrot_for_y
 
-  clr #2, SPI_CTL
+  clr #SPI_16, SPI_CTL
   rtn
 
 mandelbrot_hw:
   ;; Set SPI to 16 bit.
-  set #2, SPI_CTL
+  set #SPI_16, SPI_CTL
 
   ;; for (y = 0; y < 64; y++)
   lda #0x10000 - 64
@@ -377,7 +378,7 @@ mandelbrot_hw:
   lda #0xfc00
   sto curr_i
 mandelbrot_hw_for_y:
-  ;; for (x = 0; y < 96; x++)
+  ;; for (x = 0; x < 96; x++)
   lda #0x10000 - 96
   sto curr_x
   ;; int r = -2 << 10;
@@ -410,7 +411,7 @@ mandelbrot_hw_wait:
   ads curr_i
   icz curr_y, mandelbrot_hw_for_y
 
-  clr #2, SPI_CTL
+  clr #SPI_16, SPI_CTL
   rtn
 
 ;; lcd_send_cmd(A)
