@@ -23,6 +23,7 @@ module memory_bus
   input write_enable,
   input clk,
   input raw_clk,
+  output [3:0] servos,
   output speaker_p,
   output speaker_m,
   output ioport_0,
@@ -65,57 +66,6 @@ assign data_out = address[14] == 0 ?
   (address[13] == 0 ? ram_data_out         : rom_data_out) :
   (address[13] == 0 ? peripherals_data_out : block_ram_data_out);
 
-/*
-assign ram_0_data_in = data_in;
-assign peripherals_data_in = data_in;
-assign ram_1_data_in = data_in;
-*/
-
-// Based on the selected bank of memory, decided which module the
-// memory write should be sent to.
-/*
-always @(posedge clk) begin
-  if (write_enable) begin
-    case (address[14:13])
-      2'b00:
-        begin
-          ram_0_data_in <= data_in;
-
-          ram_write_enable <= 1;
-          peripherals_write_enable <= 0;
-          block_ram_write_enable <= 0;
-        end
-      2'b01:
-        begin
-          ram_write_enable <= 0;
-          peripherals_write_enable <= 0;
-          block_ram_write_enable <= 0;
-        end
-      2'b10:
-        begin
-          peripherals_data_in <= data_in;
-
-          ram_write_enable <= 0;
-          peripherals_write_enable <= 1;
-          block_ram_write_enable <= 0;
-        end
-      2'b11:
-        begin
-          ram_1_data_in <= data_in;
-
-          ram_write_enable <= 0;
-          peripherals_write_enable <= 0;
-          block_ram_write_enable <= 1;
-        end
-    endcase
-  end else begin
-    ram_write_enable <= 0;
-    peripherals_write_enable <= 0;
-    block_ram_write_enable <= 0;
-  end
-end
-*/
-
 rom rom_0(
   .address   (address[9:0]),
   .data_out  (rom_data_out)
@@ -140,6 +90,7 @@ peripherals peripherals_0(
   .write_enable (peripherals_write_enable),
   .clk          (clk),
   .raw_clk      (raw_clk),
+  .servos       (servos),
   .speaker_p    (speaker_p),
   .speaker_m    (speaker_m),
   .ioport_0     (ioport_0),

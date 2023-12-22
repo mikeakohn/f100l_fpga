@@ -45,3 +45,9 @@ set_io --warn-no-port button_halt A11
 set_io --warn-no-port button_program_select C6
 set_io --warn-no-port button_0 C11
 
+# Servos.
+set_io --warn-no-port servo_0  D3
+set_io --warn-no-port servo_1  B1
+set_io --warn-no-port servo_2  C1
+set_io --warn-no-port servo_3  D1
+

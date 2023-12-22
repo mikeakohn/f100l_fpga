@@ -17,6 +17,7 @@ module peripherals
   input  write_enable,
   input  clk,
   input  raw_clk,
+  output [3:0] servos,
   output speaker_p,
   output speaker_m,
   output ioport_0,
@@ -57,6 +58,11 @@ reg  [15:0] spi_tx_buffer;
 wire spi_busy;
 reg spi_start;
 reg spi_width_16;
+
+reg [15:0] servo_value_0;
+reg [15:0] servo_value_1;
+reg [15:0] servo_value_2;
+reg [15:0] servo_value_3;
 
 reg [15:0] mandelbrot_r;
 reg [15:0] mandelbrot_i;
@@ -155,6 +161,10 @@ always @(posedge raw_clk) begin
       5'hb: mandelbrot_r <= data_in;
       5'hc: mandelbrot_i <= data_in;
       5'hd: if (data_in[1] == 1) mandelbrot_start <= 1;
+      5'h10: servo_value_0 <= data_in;
+      5'h11: servo_value_1 <= data_in;
+      5'h12: servo_value_2 <= data_in;
+      5'h13: servo_value_3 <= data_in;
     endcase
   end else begin
     if (spi_start && spi_busy) spi_start <= 0;
@@ -172,6 +182,10 @@ always @(posedge raw_clk) begin
         5'hc: data_out <= mandelbrot_i;
         5'hd: data_out <= { 7'b0000000, mandelbrot_busy };
         5'he: data_out <= { 12'b00000000000, mandelbrot_result };
+        5'h10: data_out <= servo_value_0;
+        5'h11: data_out <= servo_value_1;
+        5'h12: data_out <= servo_value_2;
+        5'h13: data_out <= servo_value_3;
         default: data_out <= 0;
       endcase
     end
@@ -189,6 +203,16 @@ spi spi_0
   .sclk     (spi_clk),
   .mosi     (spi_mosi),
   .miso     (spi_miso)
+);
+
+servo_control servo_control_0
+(
+  .raw_clk       (raw_clk),
+  .servos        (servos),
+  .servo_value_0 (servo_value_0),
+  .servo_value_1 (servo_value_1),
+  .servo_value_2 (servo_value_2),
+  .servo_value_3 (servo_value_3)
 );
 
 mandelbrot mandelbrot_0

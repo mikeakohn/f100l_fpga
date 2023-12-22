@@ -253,10 +253,10 @@ Memory Map
 This implementation of the F100-L has 4 banks of memory. Each address
 contains a 16 bit word instead of 8 bit byte like a typical CPU.
 
-* Bank 0: 0x0000 RAM (1024 words) Implicit BlockRam.
+* Bank 0: 0x0000 RAM (2048 words)
 * Bank 1: 0x2000 ROM
 * Bank 2: 0x4000 Peripherals
-* Bank 3: 0x6000 RAM (1024 words)
+* Bank 3: 0x6000 RAM (2048 words)
 
 On start-up by default, the chip will load a program from a AT93C86A
 2kB EEPROM with a 3-Wire (SPI-like) interface but wll run the code
@@ -276,11 +276,15 @@ The peripherals area contain the following:
 * 0x400c: mandelbrot imaginary value
 * 0x400d: mandelbrot control: bit 1: start, bit 0: busy
 * 0x400e: mandelbrot result (bottom 4 bits)
+* 0x4010: servo_0 value (2ms = 24,000, 1ms = 12,000)
+* 0x4010: servo_1 value
+* 0x4010: servo_2 value
+* 0x4010: servo_3 value
 
 IO
 --
 
-iport_A is just 1 output in my test circuit to an LED.
+iport_A is just 1 output in the test circuit to an LED.
 iport_B is 3 outputs used in my test circuit for SPI (RES/CS/DC) to the LCD.
 
 MIDI
@@ -301,6 +305,15 @@ buffer to be transmitted. Until the data is fully transmitted, bit 0
 will be set to 1 to let the user know the SPI bus is busy.
 
 There is also the ability to do 16 bit transfers by setting bit 2 to 1.
+
+Servos
+------
+
+The servo module provides a 1ms to 2ms pulse every 20ms to control
+a servo motor. The each of the 4 servos takes a value from 0 to 65536
+based on the 12MHz clock of the iceFUN. A value of 12000 will be 1ms
+and 24000 is 2ms. Any value between 12000 and 24000 is valid to pick
+how far rotated the servo should be.
 
 Mandelbrot
 ----------

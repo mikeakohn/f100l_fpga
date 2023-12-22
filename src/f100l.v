@@ -28,7 +28,11 @@ module f100l
   input  button_0,
   output spi_clk,
   output spi_mosi,
-  input  spi_miso
+  input  spi_miso,
+  output servo_0,
+  output servo_1,
+  output servo_2,
+  output servo_3
 );
 
 // iceFUN 8x4 LEDs used for debugging.
@@ -114,6 +118,13 @@ assign bits5  = instruction[4:0];
 // Upper 4 bits of the instruction.
 wire [3:0] alu_op;
 assign alu_op = instruction[15:12];
+
+// Servos.
+reg [3:0] servos;
+assign servo_0 = servos[0];
+assign servo_1 = servos[1];
+assign servo_2 = servos[2];
+assign servo_3 = servos[3];
 
 // Eeprom.
 reg [10:0] eeprom_count;
@@ -1043,6 +1054,7 @@ memory_bus memory_bus_0(
   .write_enable (mem_write_enable),
   .clk          (clk),
   .raw_clk      (raw_clk),
+  .servos       (servos),
   .speaker_p    (speaker_p),
   .speaker_m    (speaker_m),
   .ioport_0     (ioport_0),

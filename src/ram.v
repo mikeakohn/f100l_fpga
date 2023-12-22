@@ -23,7 +23,7 @@ module ram
   //input double_clk,
 );
 
-reg [15:0] storage [1023:0];
+reg [15:0] storage [2047:0];
 
 /*
 initial begin

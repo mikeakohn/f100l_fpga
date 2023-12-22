@@ -160,7 +160,7 @@ lcd_clear:
   lda #0x10000 - (96 * 64)
   sto 30
 lcd_clear_loop:
-  lda #0xff0f
+  lda #0x0f0f
   cal lcd_send_data
   icz 30, lcd_clear_loop
   clr #SPI_16, SPI_CTL

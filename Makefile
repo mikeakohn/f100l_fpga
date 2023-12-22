@@ -9,6 +9,7 @@ SOURCE= \
   src/ram.v \
   src/mandelbrot.v \
   src/rom.v \
+  src/servo_control.v \
   src/spi.v
 
 default:

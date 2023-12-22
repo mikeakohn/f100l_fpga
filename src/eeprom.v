@@ -35,7 +35,7 @@ reg [2:0] delay = 0;
 
 reg [13:0] command;
 reg [3:0] count;
-reg running = 0;
+//reg running = 0;
 
 parameter STATE_IDLE           = 0;
 parameter STATE_SEND_ADDRESS_0 = 1;
