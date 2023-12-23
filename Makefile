@@ -2,7 +2,6 @@
 PROGRAM=f100l
 SOURCE= \
   src/$(PROGRAM).v \
-  src/block_ram.v \
   src/eeprom.v \
   src/memory_bus.v \
   src/peripherals.v \
@@ -21,56 +20,56 @@ program:
 	iceFUNprog $(PROGRAM).bin
 
 blink:
-	naken_asm -l -type bin -o blink.bin test/blink.asm
-	python3 tools/lst2verilog.py blink.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/blink.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_0:
-	naken_asm -l -type bin -o p_mode.bin test/p_mode.asm
-	python3 tools/lst2verilog.py p_mode.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/p_mode.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_1:
-	naken_asm -l -type bin -o load_byte.bin test/load_byte.asm
-	python3 tools/lst2verilog.py load_byte.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/load_byte.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_2:
-	naken_asm -l -type bin -o branch.bin test/branch.asm
-	python3 tools/lst2verilog.py branch.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/branch.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_3:
-	naken_asm -l -type bin -o compare.bin test/compare.asm
-	python3 tools/lst2verilog.py compare.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/compare.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_4:
-	naken_asm -l -type bin -o dec_jmp.bin test/dec_jmp.asm
-	python3 tools/lst2verilog.py dec_jmp.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/dec_jmp.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_5:
-	naken_asm -l -type bin -o rotate.bin test/rotate.asm
-	python3 tools/lst2verilog.py rotate.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/rotate.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_6:
-	naken_asm -l -type bin -o switch.bin test/switch.asm
-	python3 tools/lst2verilog.py switch.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/switch.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_7:
-	naken_asm -l -type bin -o shift_d.bin test/shift_d.asm
-	python3 tools/lst2verilog.py shift_d.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/shift_d.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_8:
-	naken_asm -l -type bin -o call_ret.bin test/call_ret.asm
-	python3 tools/lst2verilog.py call_ret.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/call_ret.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 play_song:
-	naken_asm -l -type bin -o play_song.bin test/play_song.asm
-	#python3 tools/lst2verilog.py play_song.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/play_song.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 lcd:
-	naken_asm -l -type bin -o lcd.bin test/lcd.asm
-	python3 tools/lst2verilog.py lcd.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/lcd.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 spi:
-	naken_asm -l -type bin -o spi.bin test/spi.asm
-	python3 tools/lst2verilog.py spi.lst > src/rom.v
+	naken_asm -l -type bin -o rom.bin test/spi.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
 
 clean:
 	@rm -f $(PROGRAM).bin $(PROGRAM).json $(PROGRAM).asc *.lst *.bin
