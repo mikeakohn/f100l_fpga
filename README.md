@@ -277,9 +277,9 @@ The peripherals area contain the following:
 * 0x400d: mandelbrot control: bit 1: start, bit 0: busy
 * 0x400e: mandelbrot result (bottom 4 bits)
 * 0x4010: servo_0 value (2ms = 24,000, 1ms = 12,000)
-* 0x4010: servo_1 value
-* 0x4010: servo_2 value
-* 0x4010: servo_3 value
+* 0x4011: servo_1 value
+* 0x4012: servo_2 value
+* 0x4013: servo_3 value
 
 IO
 --
