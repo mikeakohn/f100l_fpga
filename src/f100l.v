@@ -777,7 +777,7 @@ always @(posedge clk) begin
           cr[CR_S] <= temp[15];
           cr[CR_Z] <= temp[15:0] == 0;
 
-          if (alu_op == OP_SUB || alu_op == OP_SBS)
+          if (alu_op == OP_SUB || alu_op == OP_SBS || alu_op == OP_CMP)
             cr[CR_V] <= (accum[15] != data[15]) && (temp[15] == accum[15]);
           else if (alu_op == OP_ADD || alu_op == OP_ADS)
             cr[CR_V] <= (accum[15] == data[15]) && (temp[15] != accum[15]);
