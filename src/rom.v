@@ -11,7 +11,7 @@
 
 module rom
 (
-  input  [9:0] address,
+  input  [10:0] address,
   output reg [15:0] data_out,
   input clk
 );

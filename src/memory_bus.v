@@ -67,13 +67,13 @@ assign data_out = address[14] == 0 ?
   (address[13] == 0 ? peripherals_data_out : block_ram_data_out);
 
 rom rom_0(
-  .address   (address[9:0]),
+  .address   (address[10:0]),
   .data_out  (rom_data_out),
   .clk       (raw_clk)
 );
 
 ram ram_0(
-  .address      (address[9:0]),
+  .address      (address[10:0]),
   //.data_in      (ram_0_data_in),
   .data_in      (data_in),
   .data_out     (ram_data_out),
@@ -106,7 +106,7 @@ peripherals peripherals_0(
 );
 
 ram ram_1(
-  .address      (address[9:0]),
+  .address      (address[10:0]),
   //.data_in      (ram_1_data_in),
   .data_in      (data_in),
   .data_out     (block_ram_data_out),
