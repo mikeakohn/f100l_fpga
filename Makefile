@@ -23,6 +23,10 @@ blink:
 	naken_asm -l -type bin -o rom.bin test/blink.asm
 	python3 tools/bin2txt.py rom.bin > rom.txt
 
+servo:
+	naken_asm -l -type bin -o rom.bin test/servo.asm
+	python3 tools/bin2txt.py rom.bin > rom.txt
+
 rom_0:
 	naken_asm -l -type bin -o rom.bin test/p_mode.asm
 	python3 tools/bin2txt.py rom.bin > rom.txt
