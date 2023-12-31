@@ -30,11 +30,15 @@ module memory_bus
   output ioport_1,
   output ioport_2,
   output ioport_3,
+  output ioport_4,
   input  button_0,
   input  reset,
-  output spi_clk,
-  output spi_mosi,
-  input  spi_miso
+  output spi_clk_0,
+  output spi_mosi_0,
+  input  spi_miso_0,
+  output spi_clk_1,
+  output spi_mosi_1,
+  input  spi_miso_1
 );
 
 wire [15:0] rom_data_out;
@@ -98,11 +102,15 @@ peripherals peripherals_0(
   .ioport_1     (ioport_1),
   .ioport_2     (ioport_2),
   .ioport_3     (ioport_3),
+  .ioport_4     (ioport_4),
   .button_0     (button_0),
   .reset        (reset),
-  .spi_clk      (spi_clk),
-  .spi_mosi     (spi_mosi),
-  .spi_miso     (spi_miso)
+  .spi_clk_0    (spi_clk_0),
+  .spi_mosi_0   (spi_mosi_0),
+  .spi_miso_0   (spi_miso_0),
+  .spi_clk_1    (spi_clk_1),
+  .spi_mosi_1   (spi_mosi_1),
+  .spi_miso_1   (spi_miso_1)
 );
 
 ram ram_1(

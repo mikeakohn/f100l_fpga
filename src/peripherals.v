@@ -24,11 +24,15 @@ module peripherals
   output ioport_1,
   output ioport_2,
   output ioport_3,
+  output ioport_4,
   input  button_0,
   input  reset,
-  output spi_clk,
-  output spi_mosi,
-  input  spi_miso
+  output spi_clk_0,
+  output spi_mosi_0,
+  input  spi_miso_0,
+  output spi_clk_1,
+  output spi_mosi_1,
+  input  spi_miso_1
 );
 
 reg [7:0] storage [3:0];
@@ -49,15 +53,24 @@ reg [7:0] ioport_b = 0; // 8'hf0;
 assign ioport_1 = ioport_b[0];
 assign ioport_2 = ioport_b[1];
 assign ioport_3 = ioport_b[2];
+assign ioport_4 = ioport_b[3];
 
 //assign debug = ioport_b;
-assign debug = spi_tx_buffer;
+assign debug = 0;
 
-wire [7:0] spi_rx_buffer;
-reg  [15:0] spi_tx_buffer;
-wire spi_busy;
-reg spi_start;
-reg spi_width_16;
+// SPI 0.
+wire [7:0] spi_rx_buffer_0;
+reg  [15:0] spi_tx_buffer_0;
+wire spi_busy_0;
+reg spi_start_0;
+reg spi_width_16_0;
+
+// SPI 1.
+wire [7:0] spi_rx_buffer_1;
+reg  [15:0] spi_tx_buffer_1;
+wire spi_busy_1;
+reg spi_start_1;
+reg spi_width_16_1;
 
 reg [15:0] servo_value_0;
 reg [15:0] servo_value_1;
@@ -107,11 +120,17 @@ always @(posedge raw_clk) begin
 
   if (write_enable) begin
     case (address[5:0])
-      5'h1: spi_tx_buffer <= data_in;
+      5'h1: spi_tx_buffer_0 <= data_in;
       5'h3:
         begin
-          if (data_in[1] == 1) spi_start <= 1;
-          spi_width_16 <= data_in[2];
+          if (data_in[1] == 1) spi_start_0 <= 1;
+          spi_width_16_0 <= data_in[2];
+        end
+      5'h4: spi_tx_buffer_1 <= data_in;
+      5'h6:
+        begin
+          if (data_in[1] == 1) spi_start_1 <= 1;
+          spi_width_16_1 <= data_in[2];
         end
       5'h8: ioport_a <= data_in;
       5'h9:
@@ -167,15 +186,19 @@ always @(posedge raw_clk) begin
       5'h13: servo_value_3 <= data_in;
     endcase
   end else begin
-    if (spi_start && spi_busy) spi_start <= 0;
+    if (spi_start_0 && spi_busy_0) spi_start_0 <= 0;
+    if (spi_start_1 && spi_busy_1) spi_start_1 <= 0;
     if (mandelbrot_start && mandelbrot_busy) mandelbrot_start <= 0;
 
     if (enable) begin
       case (address[5:0])
         5'h0: data_out <= buttons;
-        5'h1: data_out <= spi_tx_buffer;
-        5'h2: data_out <= spi_rx_buffer;
-        5'h3: data_out <= { 5'b00000, spi_width_16, 1'b0, spi_busy };
+        5'h1: data_out <= spi_tx_buffer_0;
+        5'h2: data_out <= spi_rx_buffer_0;
+        5'h3: data_out <= { 5'b00000, spi_width_16_0, 1'b0, spi_busy_0 };
+        5'h4: data_out <= spi_tx_buffer_1;
+        5'h5: data_out <= spi_rx_buffer_1;
+        5'h6: data_out <= { 5'b00000, spi_width_16_1, 1'b0, spi_busy_1 };
         5'h8: data_out <= ioport_a;
         5'ha: data_out <= ioport_b;
         5'hb: data_out <= mandelbrot_r;
@@ -195,14 +218,27 @@ end
 spi spi_0
 (
   .raw_clk  (raw_clk),
-  .start    (spi_start),
-  .width_16 (spi_width_16),
-  .data_tx  (spi_tx_buffer),
-  .data_rx  (spi_rx_buffer),
-  .busy     (spi_busy),
-  .sclk     (spi_clk),
-  .mosi     (spi_mosi),
-  .miso     (spi_miso)
+  .start    (spi_start_0),
+  .width_16 (spi_width_16_0),
+  .data_tx  (spi_tx_buffer_0),
+  .data_rx  (spi_rx_buffer_0),
+  .busy     (spi_busy_0),
+  .sclk     (spi_clk_0),
+  .mosi     (spi_mosi_0),
+  .miso     (spi_miso_0)
+);
+
+spi spi_1
+(
+  .raw_clk  (raw_clk),
+  .start    (spi_start_1),
+  .width_16 (spi_width_16_1),
+  .data_tx  (spi_tx_buffer_1),
+  .data_rx  (spi_rx_buffer_1),
+  .busy     (spi_busy_1),
+  .sclk     (spi_clk_1),
+  .mosi     (spi_mosi_1),
+  .miso     (spi_miso_1)
 );
 
 servo_control servo_control_0
