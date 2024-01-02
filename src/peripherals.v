@@ -59,18 +59,20 @@ assign ioport_4 = ioport_b[3];
 assign debug = 0;
 
 // SPI 0.
-wire [7:0] spi_rx_buffer_0;
+wire [15:0] spi_rx_buffer_0;
 reg  [15:0] spi_tx_buffer_0;
 wire spi_busy_0;
-reg spi_start_0;
-reg spi_width_16_0;
+reg spi_start_0 = 0;
+reg spi_width_16_0 = 0;
+reg [3:0] spi_divisor_0 = 0;
 
 // SPI 1.
-wire [7:0] spi_rx_buffer_1;
+wire [15:0] spi_rx_buffer_1;
 reg  [15:0] spi_tx_buffer_1;
 wire spi_busy_1;
-reg spi_start_1;
-reg spi_width_16_1;
+reg spi_start_1 = 0;
+reg spi_width_16_1 = 0;
+reg [3:0] spi_divisor_1 = 0;
 
 reg [15:0] servo_value_0;
 reg [15:0] servo_value_1;
@@ -125,12 +127,14 @@ always @(posedge raw_clk) begin
         begin
           if (data_in[1] == 1) spi_start_0 <= 1;
           spi_width_16_0 <= data_in[2];
+          spi_divisor_0 <= data_in[7:4];
         end
       5'h4: spi_tx_buffer_1 <= data_in;
       5'h6:
         begin
           if (data_in[1] == 1) spi_start_1 <= 1;
           spi_width_16_1 <= data_in[2];
+          spi_divisor_1 <= data_in[7:4];
         end
       5'h8: ioport_a <= data_in;
       5'h9:
@@ -195,10 +199,10 @@ always @(posedge raw_clk) begin
         5'h0: data_out <= buttons;
         5'h1: data_out <= spi_tx_buffer_0;
         5'h2: data_out <= spi_rx_buffer_0;
-        5'h3: data_out <= { 5'b00000, spi_width_16_0, 1'b0, spi_busy_0 };
+        5'h3: data_out <= { spi_divisor_0, 1'b0, spi_width_16_0, 1'b0, spi_busy_0 };
         5'h4: data_out <= spi_tx_buffer_1;
         5'h5: data_out <= spi_rx_buffer_1;
-        5'h6: data_out <= { 5'b00000, spi_width_16_1, 1'b0, spi_busy_1 };
+        5'h6: data_out <= { spi_divisor_1, 1'b0, spi_width_16_1, 1'b0, spi_busy_1 };
         5'h8: data_out <= ioport_a;
         5'ha: data_out <= ioport_b;
         5'hb: data_out <= mandelbrot_r;
@@ -218,6 +222,7 @@ end
 spi spi_0
 (
   .raw_clk  (raw_clk),
+  .divisor  (spi_divisor_0),
   .start    (spi_start_0),
   .width_16 (spi_width_16_0),
   .data_tx  (spi_tx_buffer_0),
@@ -231,6 +236,7 @@ spi spi_0
 spi spi_1
 (
   .raw_clk  (raw_clk),
+  .divisor  (spi_divisor_1),
   .start    (spi_start_1),
   .width_16 (spi_width_16_1),
   .data_tx  (spi_tx_buffer_1),

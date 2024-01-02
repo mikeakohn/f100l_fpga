@@ -24,7 +24,7 @@ blink:
 	python3 tools/bin2txt.py rom.bin > rom.txt
 
 servo:
-	naken_asm -l -type bin -o rom.bin test/servo.asm
+	naken_asm -l -type bin -o rom.bin -I test test/servo.asm
 	python3 tools/bin2txt.py rom.bin > rom.txt
 
 rom_0:
